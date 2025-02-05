@@ -1517,9 +1517,10 @@ def show_cj_page():
         chart_col1, chart_col2 = st.columns(2)
         if df_cj is not None and not df_cj.empty:
             with chart_col1:
-                df_cj['Product_ID'] = df_cj['Product_ID'].fillna('Unknown').astype(str).replace(".0", "", regex=True)
-                time_spent_per_product = df_cj.groupby(['Product_ID', 'Product_Name'])['Time_On_Page'].sum().reset_index()
-                if not df_cj.empty and 'Product_ID' in df_cj.columns and 'Time_On_Page' in df_cj.columns and not time_spent_per_product.empty:
+                # df_cj['Product_ID'] = df_cj['Product_ID'].fillna('Unknown').astype(str).replace(".0", "", regex=True)
+                # time_spent_per_product = df_cj.groupby(['Product_ID', 'Product_Name'])['Time_On_Page'].sum().reset_index()
+                # if not df_cj.empty and 'Product_ID' in df_cj.columns and 'Time_On_Page' in df_cj.columns and not time_spent_per_product.empty:
+                if not df_cj.empty and 'Product_ID' in df_cj.columns and 'Time_On_Page' in df_cj.columns:
                     df_cj['Product_ID'] = df_cj['Product_ID'].fillna('Unknown').astype(str).replace(".0", "", regex=True)
                     time_spent_per_product = df_cj.groupby(['Product_ID', 'Product_Name'])['Time_On_Page'].sum().reset_index()
                     time_spent_per_product_sorted = time_spent_per_product.sort_values(by='Time_On_Page',ascending=False)
@@ -1541,9 +1542,10 @@ def show_cj_page():
 
             # Column 2: Summary of Total Time Spent Per Collections
             with chart_col2:
-                time_spent_per_product = df_cj.groupby(['Collection_Name'])['Time_On_Page'].sum().reset_index()
-                time_spent_per_product_sorted = time_spent_per_product.sort_values(by='Time_On_Page', ascending=False)
-                if not df_cj.empty and 'Collection_Name' in df_cj.columns and 'Time_On_Page' in df_cj.columns and not time_spent_per_product_sorted.empty:
+                # time_spent_per_product = df_cj.groupby(['Collection_Name'])['Time_On_Page'].sum().reset_index()
+                # time_spent_per_product_sorted = time_spent_per_product.sort_values(by='Time_On_Page', ascending=False)
+                # if not df_cj.empty and 'Collection_Name' in df_cj.columns and 'Time_On_Page' in df_cj.columns and not time_spent_per_product_sorted.empty:
+                if not df_cj.empty and 'Collection_Name' in df_cj.columns and 'Time_On_Page' in df_cj.columns:
                     time_spent_per_product = df_cj.groupby(['Collection_Name'])['Time_On_Page'].sum().reset_index()
                     time_spent_per_product_sorted = time_spent_per_product.sort_values(by='Time_On_Page',ascending=False)
                     time_spent_per_product_sorted['Time_On_Page'] = time_spent_per_product_sorted['Time_On_Page'].apply(convert_seconds)
