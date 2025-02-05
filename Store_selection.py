@@ -1525,17 +1525,13 @@ def show_cj_page():
         chart_col1, chart_col2 = st.columns(2)
         if df_cj is not None and not df_cj.empty:
             with chart_col1:
-                if not df_cj.empty and 'Product_ID' in df_cj.columns and 'Time_On_Page' in df_cj.columns:
-
+                time_spent_per_product = df_cj.groupby(['Collection_Name'])['Time_On_Page'].sum().reset_index()
+                time_spent_per_product_sorted = time_spent_per_product.sort_values(by='Time_On_Page', ascending=False)
+                if not df_cj.empty and 'Collection_Name' in df_cj.columns and 'Time_On_Page' in df_cj.columns and not time_spent_per_product_sorted.empty: 
                     df_cj['Product_ID'] = df_cj['Product_ID'].fillna('Unknown').astype(str).replace(".0", "", regex=True)
-
-                    time_spent_per_product = df_cj.groupby(['Product_ID', 'Product_Name'])[
-                        'Time_On_Page'].sum().reset_index()
-                    time_spent_per_product_sorted = time_spent_per_product.sort_values(by='Time_On_Page',
-                                                                                       ascending=False)
-                    time_spent_per_product_sorted['Time_On_Page'] = time_spent_per_product_sorted['Time_On_Page'].apply(
-                        convert_seconds)
-
+                    time_spent_per_product = df_cj.groupby(['Product_ID', 'Product_Name'])['Time_On_Page'].sum().reset_index()
+                    time_spent_per_product_sorted = time_spent_per_product.sort_values(by='Time_On_Page',ascending=False)
+                    time_spent_per_product_sorted['Time_On_Page'] = time_spent_per_product_sorted['Time_On_Page'].apply(convert_seconds)
                     add_tooltip_css()
                     tooltip_html = render_tooltip(
                         "This table displays the total time spent on each product. The data is grouped by Product ID and Name, and the total time spent is calculated for each product. The table is sorted in descending order, showing the products that have the highest total time spent on top. Hover over the rows to see the time spent on each product, displayed in a human-readable format.")
@@ -1555,13 +1551,12 @@ def show_cj_page():
 
             # Column 2: Summary of Total Time Spent Per Collections
             with chart_col2:
-                if not df_cj.empty and 'Collection_Name' in df_cj.columns and 'Time_On_Page' in df_cj.columns:
                     time_spent_per_product = df_cj.groupby(['Collection_Name'])['Time_On_Page'].sum().reset_index()
-                    time_spent_per_product_sorted = time_spent_per_product.sort_values(by='Time_On_Page',
-                                                                                       ascending=False)
-                    time_spent_per_product_sorted['Time_On_Page'] = time_spent_per_product_sorted['Time_On_Page'].apply(
-                        convert_seconds)
-
+                    time_spent_per_product_sorted = time_spent_per_product.sort_values(by='Time_On_Page',ascending=False)
+                if not df_cj.empty and 'Collection_Name' in df_cj.columns and 'Time_On_Page' in df_cj.columns and not time_spent_per_product_sorted:
+                    time_spent_per_product = df_cj.groupby(['Collection_Name'])['Time_On_Page'].sum().reset_index()
+                    time_spent_per_product_sorted = time_spent_per_product.sort_values(by='Time_On_Page',ascending=False)
+                    time_spent_per_product_sorted['Time_On_Page'] = time_spent_per_product_sorted['Time_On_Page'].apply(convert_seconds)
                     add_tooltip_css()
                     tooltip_html = render_tooltip(
                         "This table displays the total time spent on each collection. The data is grouped by Collection Name, and the total time spent is calculated for each collection. The table is sorted in descending order, highlighting the collections with the most time spent. Hover over the rows to see the total time spent on each collection, displayed in a human-readable format.")
