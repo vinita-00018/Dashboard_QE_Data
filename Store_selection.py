@@ -113,8 +113,7 @@ def load_data(file_path, encoding='utf-8', parse_dates=True):
         return None
 
     if parse_dates:
-        date_columns = ['Order_Created_At', 'Order_Updated_At', 'Event_Time', 'Customer_Created_At',
-                        'Customer_Updated_At',
+        date_columns = ['Order_Created_At', 'Order_Updated_At', 'Event_Time', 'Customer_Created_At','Customer_Updated_At',
                         'Order_Created_At', 'Order_Updated_At', 'Variant_Created_At', 'Product_Created_At']
         for col in df.columns:
             if col in date_columns and df[col].dtype == 'object':
@@ -124,7 +123,6 @@ def load_data(file_path, encoding='utf-8', parse_dates=True):
                     st.error(f"Error parsing column '{col}': {e}")
     return df
 
-
 def get_store_names(data_dir):
     files = os.listdir(data_dir)
     store_names = set()  # Using set to avoid duplicates
@@ -132,7 +130,6 @@ def get_store_names(data_dir):
         store_name = file.split('_')[0]
         store_names.add(store_name)
     return list(store_names)
-
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(BASE_DIR, "data")
@@ -147,13 +144,12 @@ if store_select:
         'Orders_Dataset': f"{store_select}_Orders_Dataset.csv",
         'Products_Dataset': f"{store_select}_Products_Dataset.csv"
     }
-
     try:
         df_abandoned_checkouts = load_data(os.path.join(data_dir, data_files['AbandonedCheckouts']))
         if df_abandoned_checkouts is not None and df_abandoned_checkouts.empty:
-            df_abandoned_checkouts = None  # Mark as None if it's empty
+            df_abandoned_checkouts = None
     except:
-        df_abandoned_checkouts = None  # Ensure it's always defined
+        df_abandoned_checkouts = None
 
     try:
         df_cj = load_data(os.path.join(data_dir, data_files['CJ']))
@@ -183,7 +179,6 @@ if store_select:
     except:
         df_products = None
 
-
 # def filter_by_date(df, date_column, label_prefix=""):
 #     min_date = df[date_column].min().date()
 #     max_date = df[date_column].max().date()
@@ -196,14 +191,11 @@ if store_select:
 #         filtered_data = df[(df[date_column] >= start_date) & (df[date_column] <= end_date)]
 #         return filtered_data
 #     return df
-
 def filter_by_date(df, date_column, label_prefix=""):
-    # Convert to datetime if it's not already
     df[date_column] = pd.to_datetime(df[date_column], errors='coerce')
     min_date = df[date_column].min().date()
     max_date = df[date_column].max().date()
-    start_date = st.sidebar.date_input(f'{label_prefix}Start Date', min_value=min_date, max_value=max_date,
-                                       value=min_date)
+    start_date = st.sidebar.date_input(f'{label_prefix}Start Date', min_value=min_date, max_value=max_date,value=min_date)
     end_date = st.sidebar.date_input(f'{label_prefix}End Date', min_value=min_date, max_value=max_date, value=max_date)
     if start_date and end_date:
         start_date = pd.to_datetime(start_date).tz_localize('UTC')
@@ -1525,17 +1517,15 @@ def show_cj_page():
         chart_col1, chart_col2 = st.columns(2)
         if df_cj is not None and not df_cj.empty:
             with chart_col1:
-                time_spent_per_product = df_cj.groupby(['Collection_Name'])['Time_On_Page'].sum().reset_index()
-                time_spent_per_product_sorted = time_spent_per_product.sort_values(by='Time_On_Page', ascending=False)
-                if not df_cj.empty and 'Collection_Name' in df_cj.columns and 'Time_On_Page' in df_cj.columns and not time_spent_per_product_sorted.empty: 
+                df_cj['Product_ID'] = df_cj['Product_ID'].fillna('Unknown').astype(str).replace(".0", "", regex=True)
+                time_spent_per_product = df_cj.groupby(['Product_ID', 'Product_Name'])['Time_On_Page'].sum().reset_index()
+                if not df_cj.empty and 'Product_ID' in df_cj.columns and 'Time_On_Page' in df_cj.columns and not time_spent_per_product.empty:
                     df_cj['Product_ID'] = df_cj['Product_ID'].fillna('Unknown').astype(str).replace(".0", "", regex=True)
                     time_spent_per_product = df_cj.groupby(['Product_ID', 'Product_Name'])['Time_On_Page'].sum().reset_index()
                     time_spent_per_product_sorted = time_spent_per_product.sort_values(by='Time_On_Page',ascending=False)
                     time_spent_per_product_sorted['Time_On_Page'] = time_spent_per_product_sorted['Time_On_Page'].apply(convert_seconds)
                     add_tooltip_css()
-                    tooltip_html = render_tooltip(
-                        "This table displays the total time spent on each product. The data is grouped by Product ID and Name, and the total time spent is calculated for each product. The table is sorted in descending order, showing the products that have the highest total time spent on top. Hover over the rows to see the time spent on each product, displayed in a human-readable format.")
-
+                    tooltip_html = render_tooltip("This table displays the total time spent on each product. The data is grouped by Product ID and Name, and the total time spent is calculated for each product. The table is sorted in descending order, showing the products that have the highest total time spent on top. Hover over the rows to see the time spent on each product, displayed in a human-readable format.")
                     st.markdown(
                         f"<h1 style='display: inline-block;'>Summary of Total Time Spent Per Product {tooltip_html}</h1>",
                         unsafe_allow_html=True)
@@ -1545,22 +1535,20 @@ def show_cj_page():
                     st.title("Summary of Total Time Spent Per Product")
                     st.markdown(""" 
                         <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                            <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data for Summary of Total Time Spent Per Product</h3>
+                        <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data for Summary of Total Time Spent Per Product</h3>
                         </div>
                     """, unsafe_allow_html=True)
 
             # Column 2: Summary of Total Time Spent Per Collections
             with chart_col2:
-                    time_spent_per_product = df_cj.groupby(['Collection_Name'])['Time_On_Page'].sum().reset_index()
-                    time_spent_per_product_sorted = time_spent_per_product.sort_values(by='Time_On_Page',ascending=False)
-                if not df_cj.empty and 'Collection_Name' in df_cj.columns and 'Time_On_Page' in df_cj.columns and not time_spent_per_product_sorted:
+                time_spent_per_product = df_cj.groupby(['Collection_Name'])['Time_On_Page'].sum().reset_index()
+                time_spent_per_product_sorted = time_spent_per_product.sort_values(by='Time_On_Page', ascending=False)
+                if not df_cj.empty and 'Collection_Name' in df_cj.columns and 'Time_On_Page' in df_cj.columns and not time_spent_per_product_sorted.empty:
                     time_spent_per_product = df_cj.groupby(['Collection_Name'])['Time_On_Page'].sum().reset_index()
                     time_spent_per_product_sorted = time_spent_per_product.sort_values(by='Time_On_Page',ascending=False)
                     time_spent_per_product_sorted['Time_On_Page'] = time_spent_per_product_sorted['Time_On_Page'].apply(convert_seconds)
                     add_tooltip_css()
-                    tooltip_html = render_tooltip(
-                        "This table displays the total time spent on each collection. The data is grouped by Collection Name, and the total time spent is calculated for each collection. The table is sorted in descending order, highlighting the collections with the most time spent. Hover over the rows to see the total time spent on each collection, displayed in a human-readable format.")
-
+                    tooltip_html = render_tooltip("This table displays the total time spent on each collection. The data is grouped by Collection Name, and the total time spent is calculated for each collection. The table is sorted in descending order, highlighting the collections with the most time spent. Hover over the rows to see the total time spent on each collection, displayed in a human-readable format.")
                     st.markdown(
                         f"<h1 style='display: inline-block;'>Summary of Total Time Spent Per Collections {tooltip_html}</h1>",
                         unsafe_allow_html=True)
@@ -1570,7 +1558,7 @@ def show_cj_page():
                     st.title("Summary of Total Time Spent Per Collections")
                     st.markdown(""" 
                         <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                            <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data for Summary of Total Time Spent Per Collections</h3>
+                        <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data for Summary of Total Time Spent Per Collections</h3>
                         </div>
                     """, unsafe_allow_html=True)
         else:
@@ -3287,7 +3275,6 @@ def show_products_page():
             f"<h3 style='font-size: 30px; color: red; text-align: center;'><b>Dataset Currently is unavaialbe</b></h3>",
             unsafe_allow_html=True)
 
-
 def show_revenue_page():
     st.title('Revenue Data')
     add_custom_css()
@@ -3733,7 +3720,6 @@ def show_revenue_page():
         st.markdown(
             f"<h3 style='font-size: 30px; color: red; text-align: center;'><b>Datasets Currently is unavaialbe</b></h3>",
             unsafe_allow_html=True)
-
 
 page = st.sidebar.selectbox("Select a Page",['Customer Journey', 'Customer Data', 'Order Data', 'Abandoned Checkouts', 'Products','Revenue'])
 
