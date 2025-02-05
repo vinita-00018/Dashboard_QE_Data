@@ -350,7 +350,7 @@ def show_customer_data_page():
 
         # Todo- Customer Name Top 5 and Least 5 with Price Spends----------------------------------------
         chart_col1, chart_col2 = st.columns(2)
-        if df_customers is not None and not df_customers.empty:
+        if  df_orders is not None and not df_orders.empty:
             order_df = df_orders.drop_duplicates("Order_ID")
             order_data = order_df.groupby('Customer_Name')['Order_Total_Price'].sum().reset_index()
             order_data = order_data.dropna(subset=['Customer_Name'])
@@ -473,7 +473,7 @@ def show_customer_data_page():
                 """, unsafe_allow_html=True)
 
         # Todo- Customer Summary Table with Total Spend- Unique Customer Names----------------------------------------
-        if df_customers is not None and not df_customers.empty:
+        if df_orders is not None and not df_orders.empty:
             customer_summary = df_orders.groupby("Order_ID").agg(
                 Total_Spending=("Order_Total_Price", 'first'),
                 Customer_Name=("Customer_Name", "first")
@@ -708,104 +708,76 @@ def show_cj_page():
         # #Todo- Session details on weekdays and Weekends
         col1, col2 = st.columns(2)
         if df_cj is not None and not df_cj.empty:
-            with col1:
-                add_tooltip_css()
-                tooltip_html = render_tooltip(
-                    "This chart compares the total number of sessions on weekdays and weekends based on event timestamps. The data is grouped by unique customer sessions. Hover over the chart to see detailed information, including the category (Weekday or Weekend), the session count, and the percentage representation.")
-                st.markdown(f"<h1 style='display: inline-block;'>Total sessions:weekday,weekend{tooltip_html}</h1>",
-                            unsafe_allow_html=True)
-                # Determine Weekday or Weekend
-                df_cj["Weekday_Weekend"] = df_cj["Event_Time"].dt.dayofweek.apply(
-                    lambda x: "Weekend" if x >= 5 else "Weekday")
-
-                if not df_cj.empty:
-                    grouped_filtered_df = df_cj.groupby(["Customer_IP", "session"]).first().reset_index()
+            try:
+                df_temp = df_cj.copy()
+                df_temp["Event_Time"] = pd.to_datetime(df_temp["Event_Time"], errors='coerce')
+                df_temp = df_temp.dropna(subset=["Event_Time"])
+                with col1:
+                    add_tooltip_css()
+                    tooltip_html = render_tooltip("This chart compares the total number of sessions on weekdays and weekends based on event timestamps. The data is grouped by unique customer sessions.")
+                    st.markdown(f"<h1 style='display: inline-block;'>Total sessions: weekday,weekend {tooltip_html}</h1>",unsafe_allow_html=True)
+                    df_temp["Weekday_Weekend"] = df_temp["Event_Time"].dt.dayofweek.apply(lambda x: "Weekend" if x >= 5 else "Weekday")
+                    grouped_filtered_df = df_temp.groupby(["Customer_IP", "session"]).first().reset_index()
                     weekday_count = grouped_filtered_df[grouped_filtered_df["Weekday_Weekend"] == "Weekday"].shape[0]
                     weekend_count = grouped_filtered_df[grouped_filtered_df["Weekday_Weekend"] == "Weekend"].shape[0]
-
                     counts = [weekday_count, weekend_count]
                     labels = ["Weekday", "Weekend"]
-                    # Display counts and percentages
                     total_sessions = sum(counts)
-                    # st.write(f"**Weekday Count:** {weekday_count} ({(weekday_count / total_sessions) * 100:.2f}%)")
-                    # st.write(f"**Weekend Count:** {weekend_count} ({(weekend_count / total_sessions) * 100:.2f}%)")
-                    # Prepare DataFrame for Chart
                     pie_data = pd.DataFrame({
                         "Category": labels,
                         "Count": counts,
-                        "Percentage": [(count / total_sessions) * 100 for count in counts]
+                        "Percentage": [(count / total_sessions) * 100 if total_sessions > 0 else 0 for count in counts]
                     })
-                    # Create Pie Chart with fixed size
                     pie_chart = alt.Chart(pie_data).mark_arc(size=200).encode(
                         theta=alt.Theta(field="Count", type="quantitative"),
                         color=alt.Color(field="Category", type="nominal"),
                         tooltip=["Category", "Count", "Percentage"]
-                    ).properties(width=300, height=300)  # Uniform size
-
-                    # Display the Chart
+                    ).properties(width=300, height=300)
                     st.altair_chart(pie_chart, use_container_width=True)
-
-                else:
-                    st.title("Total Sessions:Weekday vs Weekend")
-                    st.markdown("""
-                    <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                        <h3 style="font-size: 20px; color: black; font-weight: bold;">Total Sessions: Weekday vs Weekend - No Data Available</h3>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-            # --- Days of the Week Pie Chart ---
-            with col2:
-                add_tooltip_css()
-                tooltip_html = render_tooltip(
-                    "This chart displays the total number of sessions across different days of the week. The pie chart shows how sessions are distributed by day, with each segment representing one day of the week. Hover over the segments to see the number of sessions for each specific day. The data is based on unique sessions for each customer IP."
-                )
-                st.markdown(f"<h1 style='display: inline-block;'>Total sessions: days of week  {tooltip_html}</h1>",
-                            unsafe_allow_html=True)
-                if not df_cj.empty:
-                    df_cj["days_of_week"] = df_cj["Event_Time"].dt.dayofweek.apply(
+                with col2:
+                    add_tooltip_css()
+                    tooltip_html = render_tooltip(
+                        "This chart displays the total number of sessions across different days of the week. Each segment represents the session count for a particular day.")
+                    st.markdown(
+                        f"<h1 style='display: inline-block;'>Total Sessions: Days of the Week {tooltip_html}</h1>",
+                        unsafe_allow_html=True)
+                    grouped_filtered_df["days_of_week"] = grouped_filtered_df["Event_Time"].dt.dayofweek.apply(
                         lambda x: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][x]
                     )
-                    grouped_filtered_df = df_cj.groupby(["Customer_IP", "session"]).first().reset_index()
                     day_count = grouped_filtered_df["days_of_week"].value_counts()
                     day_count = day_count.reindex(
-                        ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], fill_value=0
-                    )
-                    # Create DataFrame
+                        ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], fill_value=0)
                     pie_data = pd.DataFrame({
                         "Day": day_count.index,
                         "Count": day_count.values
                     })
-                    # Create Pie Chart with fixed size
                     pie_chart = alt.Chart(pie_data).mark_arc(size=200).encode(
                         theta="Count:Q",
-                        color=alt.Color("Day:N", sort=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
-                                                       "Sunday"]),
+                        color=alt.Color("Day:N",sort=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday","Sunday"]),
                         tooltip=["Day:N", "Count:Q"]
-                    ).properties(width=300, height=300)  # Uniform size
+                    ).properties(width=300, height=300)
+
                     # Display Chart
                     st.altair_chart(pie_chart, use_container_width=True)
-                else:
-                    st.title("Total Sessions by Day of the Week")
-                    st.markdown("""
-                    <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                        <h3 style="font-size: 20px; color: black; font-weight: bold;">Total Sessions by Day of the Week - No Data Available</h3>
-                    </div>
-                    """, unsafe_allow_html=True)
+
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
         else:
             with col1:
-                st.title("Total Sessions: Weekday vs Weekend")
+                st.title("Total sessions:Weekday,Weekend")
                 st.markdown("""
                     <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
                         <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Total Sessions: Weekday vs Weekend</h3>
                     </div>
                 """, unsafe_allow_html=True)
+
             with col2:
                 st.title("Total Sessions by Day of the Week")
                 st.markdown("""
-                                <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                                    <h3 style="font-size: 30px; color: white; font-weight: bold;"> No Data Available Total Sessions by Day of the Week</h3>
-                                </div>
-                                """, unsafe_allow_html=True)
+                    <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
+                        <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Total Sessions by Day of the Week</h3>
+                    </div>
+                """, unsafe_allow_html=True)
 
         # Todo-Session per hours---------------------------------------------
         col1 = st.columns(1)[0]
