@@ -7,7 +7,6 @@ from wordcloud import WordCloud
 import io
 import os
 
-
 def add_tooltip_css():
     st.markdown(f"""
         <style>
@@ -43,14 +42,12 @@ def add_tooltip_css():
         </style>
     """, unsafe_allow_html=True)
 
-
 def render_tooltip(info_text: str, icon: str = "ℹ️") -> str:
     return f"""
     <div class="tooltip">{icon}
       <span class="tooltiptext">{info_text}</span>
     </div>
     """
-
 
 st.set_page_config(
     page_title="Dashboard",
@@ -69,7 +66,6 @@ st.markdown(
     </style>
     """, unsafe_allow_html=True
 )
-
 
 def add_custom_css():
     st.markdown(
@@ -97,7 +93,6 @@ def add_custom_css():
         unsafe_allow_html=True
     )
 
-
 # def load_data(file_path):
 #     df = pd.read_csv(file_path, parse_dates=False)
 #     date_columns = ['Order_Created_At', 'Order_Updated_At', 'Event_Time', 'Customer_Created_At', 'Customer_Updated_At',
@@ -110,13 +105,13 @@ def add_custom_css():
 #                 st.error(f"Error parsing column '{col}': {e}")
 #     return df
 
-
 def load_data(file_path, encoding='utf-8', parse_dates=True):
     try:
         df = pd.read_csv(file_path, encoding=encoding, parse_dates=False)
     except UnicodeDecodeError:
         st.error(f"Error reading file {file_path} with encoding {encoding}. Trying alternative encoding...")
         return None
+
     if parse_dates:
         date_columns = ['Order_Created_At', 'Order_Updated_At', 'Event_Time', 'Customer_Created_At',
                         'Customer_Updated_At',
@@ -152,6 +147,7 @@ if store_select:
         'Orders_Dataset': f"{store_select}_Orders_Dataset.csv",
         'Products_Dataset': f"{store_select}_Products_Dataset.csv"
     }
+
     try:
         df_abandoned_checkouts = load_data(os.path.join(data_dir, data_files['AbandonedCheckouts']))
         if df_abandoned_checkouts is not None and df_abandoned_checkouts.empty:
@@ -606,7 +602,6 @@ def show_customer_data_page():
             "<h3 style='font-size: 30px; color: red; text-align: center;'><b>Dataset is currently unavailable.</b></h3>",
             unsafe_allow_html=True)
 
-
 def show_cj_page():
     try:
         st.title('Customer Journey Data')
@@ -715,7 +710,7 @@ def show_cj_page():
                 with col1:
                     add_tooltip_css()
                     tooltip_html = render_tooltip("This chart compares the total number of sessions on weekdays and weekends based on event timestamps. The data is grouped by unique customer sessions.")
-                    st.markdown(f"<h1 style='display: inline-block;'>Total sessions: weekday,weekend {tooltip_html}</h1>",unsafe_allow_html=True)
+                    st.markdown(f"<h1 style='display: inline-block;'>Session :Weekday,Weekend {tooltip_html}</h1>",unsafe_allow_html=True)
                     df_temp["Weekday_Weekend"] = df_temp["Event_Time"].dt.dayofweek.apply(lambda x: "Weekend" if x >= 5 else "Weekday")
                     grouped_filtered_df = df_temp.groupby(["Customer_IP", "session"]).first().reset_index()
                     weekday_count = grouped_filtered_df[grouped_filtered_df["Weekday_Weekend"] == "Weekday"].shape[0]
@@ -739,7 +734,7 @@ def show_cj_page():
                     tooltip_html = render_tooltip(
                         "This chart displays the total number of sessions across different days of the week. Each segment represents the session count for a particular day.")
                     st.markdown(
-                        f"<h1 style='display: inline-block;'>Total Sessions: Days of the Week {tooltip_html}</h1>",
+                        f"<h1 style='display: inline-block;'>Sessions: Days of the Week {tooltip_html}</h1>",
                         unsafe_allow_html=True)
                     grouped_filtered_df["days_of_week"] = grouped_filtered_df["Event_Time"].dt.dayofweek.apply(
                         lambda x: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][x]
@@ -1782,7 +1777,6 @@ def show_cj_page():
             "<h3 style='font-size: 30px; color: red; text-align: center;'><b>Dataset is currently unavailable.</b></h3>",
             unsafe_allow_html=True)
 
-
 def show_order_data_page():
     st.title('Order Data')
     add_custom_css()
@@ -2438,7 +2432,6 @@ def show_order_data_page():
             f"<h3 style='font-size: 30px; color: red; text-align: center;'><b>Dataset Currently unavaialbe</b></h3>",
             unsafe_allow_html=True)
 
-
 def show_abandoned_checkouts_page():
     st.title('Abandoned Checkouts')
     add_custom_css()
@@ -2871,7 +2864,6 @@ def show_abandoned_checkouts_page():
         st.markdown(
             f"<h3 style='font-size: 30px; color: red; text-align: center;'><b>Dataset Currently unavaialbe</b></h3>",
             unsafe_allow_html=True)
-
 
 def show_products_page():
     st.title('Products Data')
@@ -3748,9 +3740,7 @@ def show_revenue_page():
             unsafe_allow_html=True)
 
 
-page = st.sidebar.selectbox("Select a Page",
-                            ['Customer Journey', 'Customer Data', 'Order Data', 'Abandoned Checkouts', 'Products',
-                             'Revenue'])
+page = st.sidebar.selectbox("Select a Page",['Customer Journey', 'Customer Data', 'Order Data', 'Abandoned Checkouts', 'Products','Revenue'])
 
 if page == 'Customer Journey':
     show_cj_page()

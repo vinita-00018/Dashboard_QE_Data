@@ -26,8 +26,6 @@ try:
         print("Changes committed.")
     subprocess.run(["git", "push", "-u", "origin", "main"], check=True)
     subprocess.run(["git", "pull", "--rebase", "origin", "main"], check=True)
-    # subprocess.run(["git", "pull", "--rebase", "origin", "main"], check=True)
-    # subprocess.run(["git", "push", "-u", "origin", "main"], check=True)
     print("Folder has been successfully pushed to GitHub!")
 except subprocess.CalledProcessError as e:
     print(f"Git command failed: {e}")
