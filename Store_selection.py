@@ -1460,7 +1460,6 @@ def show_cj_page():
                 avg_time_per_event['Time_On_Page_Display'] = avg_time_per_event['Time_On_Page'].apply(convert_seconds)
                 Total_time_spent = filtered_df.groupby('Event')['Time_On_Page'].sum().reset_index()
                 Total_time_spent['Time_On_Page_Display'] = Total_time_spent['Time_On_Page'].apply(convert_seconds)
-                # Column 1: Average Time Spent on Each Event
                 with col1:
                     add_tooltip_css()
                     tooltip_html = render_tooltip(
@@ -2359,46 +2358,49 @@ def show_order_data_page():
         try:
             if df_orders is not None and not df_orders.empty:
                 df_unique_orders = df_orders.drop_duplicates(subset="Order_ID", keep="first")
-                total_orders_by_site = df_unique_orders.groupby("Order_Referring_Site")[
-                    "Order_ID"].count().reset_index()
+                total_orders_by_site = df_unique_orders.groupby("Order_Referring_Site")["Order_ID"].count().reset_index()
                 total_orders_by_site.columns = ["Referring Site", "Total Orders"]
-
-                add_tooltip_css()
-                tooltip_html = render_tooltip(
-                    "This bar chart displays the top N referring sites by total number of orders. Hover over each bar to see the referring site and the corresponding number of orders.")
-                st.markdown(f"<h1 style='display: inline-block;'>Total Orders by Referring Sites {tooltip_html}</h1>",
-                            unsafe_allow_html=True)
-                st.markdown("### Visualizing the count of total orders grouped by referring sites")
-                top_n = st.slider("Select Top N Referring Sites to Display", min_value=1,
-                                  max_value=len(total_orders_by_site), value=5)
-                top_order_sites = total_orders_by_site.nlargest(top_n, "Total Orders")
-
-                # Step 4: Create Altair Chart
-                chart = alt.Chart(top_order_sites).mark_bar().encode(
-                    x=alt.X("Referring Site:O", title="Referring Site", sort="-y"),
-                    y=alt.Y("Total Orders:Q", title="Number of Orders"),
-                    color=alt.Color("Total Orders:Q", legend=None),
-                    tooltip=["Referring Site:N", "Total Orders:Q"]
-                ).properties(
-                    width=700,
-                    height=400,
-                    title="Top N Referring Sites by Total Orders"
-                )
-
-                text = chart.mark_text(
-                    align="center",
-                    baseline="middle",
-                    dy=-10  # Adjust text position
-                ).encode(
-                    text="Total Orders:Q"
-                )
-                final_chart = chart + text
-                final_chart = final_chart.configure_axis(
-                    labelAngle=0,
-                    labelFontSize=12,
-                    titleFontSize=14
-                )
-                st.altair_chart(final_chart, use_container_width=True)
+                if not total_orders_by_site.empty:
+                    add_tooltip_css()
+                    tooltip_html = render_tooltip("This bar chart displays the top N referring sites by total number of orders. Hover over each bar to see the referring site and the corresponding number of orders.")
+                    st.markdown(f"<h1 style='display: inline-block;'>Total Orders by Referring Sites {tooltip_html}</h1>",
+                                unsafe_allow_html=True)
+                    st.markdown("### Visualizing the count of total orders grouped by referring sites")
+                    top_n = st.slider("Select Top N Referring Sites to Display", min_value=1,
+                                      max_value=len(total_orders_by_site), value=5)
+                    top_order_sites = total_orders_by_site.nlargest(top_n, "Total Orders")
+                    # Step 4: Create Altair Chart
+                    chart = alt.Chart(top_order_sites).mark_bar().encode(
+                        x=alt.X("Referring Site:O", title="Referring Site", sort="-y"),
+                        y=alt.Y("Total Orders:Q", title="Number of Orders"),
+                        color=alt.Color("Total Orders:Q", legend=None),
+                        tooltip=["Referring Site:N", "Total Orders:Q"]
+                    ).properties(
+                        width=700,
+                        height=400,
+                        title="Top N Referring Sites by Total Orders"
+                    )
+                    text = chart.mark_text(
+                        align="center",
+                        baseline="middle",
+                        dy=-10  # Adjust text position
+                    ).encode(
+                        text="Total Orders:Q"
+                    )
+                    final_chart = chart + text
+                    final_chart = final_chart.configure_axis(
+                        labelAngle=0,
+                        labelFontSize=12,
+                        titleFontSize=14
+                    )
+                    st.altair_chart(final_chart, use_container_width=True)
+                else:
+                    st.title("Total Orders by Referring Sites")
+                    st.markdown("""
+                        <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
+                            <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Total Orders by Referring Sites.</h3>
+                        </div>
+                    """, unsafe_allow_html=True)
             else:
                 st.title("Total Orders by Referring Sites")
                 st.markdown("""
