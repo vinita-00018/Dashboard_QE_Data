@@ -1,0 +1,2 @@
+Order_ID,Customer_ID,Order_Created_At,Order_Updated_At,Order_Cancelled_At,Order_Cancel_Reason,Product_ID,Product_Variant_Id,Product_Quantity,Order_Total_Price,Currency,Product_Price,Order_Total_Discount,Product_Discount,Order_Refund_Amount,Order_Referring_Site,Order_Source_Name,Product_Name,Customer_Name,Customer_Email
+5206416785485,5684593098829,2025-01-17T07:24:02Z,2025-01-17T07:24:03Z,,,,,1,620.00,USD,620.00,0.00,620.00,0,,direct,FBT,Kiran Patel,kiran@mailinator.com
