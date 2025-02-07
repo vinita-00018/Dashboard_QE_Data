@@ -178,7 +178,6 @@ if store_select:
             df_products = None
     except:
         df_products = None
-
 # def filter_by_date(df, date_column, label_prefix=""):
 #     min_date = df[date_column].min().date()
 #     max_date = df[date_column].max().date()
@@ -191,6 +190,7 @@ if store_select:
 #         filtered_data = df[(df[date_column] >= start_date) & (df[date_column] <= end_date)]
 #         return filtered_data
 #     return df
+
 def filter_by_date(df, date_column, label_prefix=""):
     df[date_column] = pd.to_datetime(df[date_column], errors='coerce')
     min_date = df[date_column].min().date()
@@ -317,7 +317,7 @@ def show_customer_data_page():
                 st.title("Repeat Customers")
                 st.markdown("""
                                 <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                                    <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Repeat Customers</h3>
+                                <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Repeat Customers</h3>
                                 </div>
                                 """, unsafe_allow_html=True)
         if df_customers is not None and not df_customers.empty:
@@ -325,15 +325,15 @@ def show_customer_data_page():
             tooltip_html = render_tooltip("Preview of customer data filtered by the selected date range.")
             st.markdown(f"<h1 style='display: inline-block;'>Preview Filtered Customer Data {tooltip_html}</h1>",unsafe_allow_html=True)
             st.subheader("Customer Data")
-
             filtered_customers = filter_by_date(df_customers, 'Customer_Created_At')
             st.dataframe(filtered_customers, use_container_width=True)
         else:
             st.title("Preview of customer data filtered by the selected date range.")
             st.markdown("""
                             <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                                <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Preview of customer data filtered by the selected date range.</h3>
+                            <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Preview of customer data filtered by the selected date range.</h3>
                             </div>
+                            
                             """, unsafe_allow_html=True)
 
         # Todo- Customer Name Top 5 and Least 5 with Price Spends----------------------------------------
@@ -365,12 +365,10 @@ def show_customer_data_page():
                     top_n = st.slider("Select Top N Customers to Display", min_value=1, max_value=50, value=5)
 
                     top_5_customers_filtered = top_5_customers.nlargest(top_n, 'Order_Total_Price')
-                    st.markdown("<h3 style='text-align: center;'>Top N Customers by Total Order Price</h3>",
-                                unsafe_allow_html=True)
+                    st.markdown("<h3 style='text-align: center;'>Top N Customers by Total Order Price</h3>",unsafe_allow_html=True)
 
                     chart = alt.Chart(top_5_customers_filtered).mark_bar().encode(
-                        x=alt.X('Customer_Name:O', title='Customer Name',
-                                sort=top_5_customers_filtered['Order_Total_Price'].tolist()),
+                        x=alt.X('Customer_Name:O', title='Customer Name',sort=top_5_customers_filtered['Order_Total_Price'].tolist()),
                         y=alt.Y('Order_Total_Price:Q', title='Total Order Price (€)'),
                         color=alt.Color('Order_Total_Price:Q', legend=None),
                         tooltip=['Customer_Name:N', 'Order_Total_Price:Q']
@@ -1812,19 +1810,12 @@ def show_order_data_page():
 
         # Todo----Total orders placed: Weekday vs Weekend
         try:
+            col1,col2=st.columns(2)
             if df_orders is not None and not df_orders.empty:
-                add_tooltip_css()
-                tooltip_html = render_tooltip(
-                    "This pie chart illustrates the distribution of orders placed on weekdays versus weekends. Hover over each segment to view detailed information, including the category (Weekday or Weekend), the total order count, and its percentage share of the overall orders.")
-                st.markdown(
-                    f"<h1 style='display: inline-block;'>Total orders placed: Weekday vs Weekend {tooltip_html}</h1>",
-                    unsafe_allow_html=True)
+
                 df_orders_ = df_orders.groupby('Order_ID').agg({'Order_Created_At': 'first'})
-                df_orders_['Order_Created_At'] = pd.to_datetime(df_orders_['Order_Created_At'], errors='coerce',
-                                                                utc=True)
-                df_orders_['Weekday_Weekend'] = df_orders_['Order_Created_At'].dt.dayofweek.apply(
-                    lambda x: 'Weekend' if x >= 5 else 'Weekday'
-                )
+                df_orders_['Order_Created_At'] = pd.to_datetime(df_orders_['Order_Created_At'], errors='coerce',utc=True)
+                df_orders_['Weekday_Weekend'] = df_orders_['Order_Created_At'].dt.dayofweek.apply(lambda x: 'Weekend' if x >= 5 else 'Weekday')
                 weekday_count = df_orders_[df_orders_['Weekday_Weekend'] == 'Weekday'].shape[0]
                 weekend_count = df_orders_[df_orders_['Weekday_Weekend'] == 'Weekend'].shape[0]
                 counts = [weekday_count, weekend_count]
@@ -1835,50 +1826,29 @@ def show_order_data_page():
                     'Percentage': [(count / sum(counts)) * 100 for count in counts]  # Calculate percentage
                 })
                 pie_data['Label'] = pie_data['Percentage'].round(1).astype(str) + '%'
-
                 # Plotting the Pie Chart
                 pie_chart = alt.Chart(pie_data).mark_arc().encode(
                     theta=alt.Theta(field="Count", type="quantitative"),
                     color=alt.Color(field="Category", type="nominal"),
                     tooltip=["Category", "Count", "Percentage"],  # Show both count and percentage in tooltip
                 )
-                # Display the results
-                col1 = st.columns(1)[0]
                 with col1:
                     # st.write(f"Weekday Count: {weekday_count} ({(weekday_count / sum(counts)) * 100:.2f}%)")
                     # st.write(f"Weekend Count: {weekend_count} ({(weekend_count / sum(counts)) * 100:.2f}%)")
-                    st.markdown("<h3 style='text-align: center;'>Orders by Weekday/Weekend</h3>",
-                                unsafe_allow_html=True)
+                    add_tooltip_css()
+                    tooltip_html = render_tooltip(
+                        "This pie chart illustrates the distribution of orders placed on weekdays versus weekends. Hover over each segment to view detailed information, including the category (Weekday or Weekend), the total order count, and its percentage share of the overall orders.")
+                    st.markdown(
+                        f"<h1 style='display: inline-block;'>Total orders placed: Weekday vs Weekend {tooltip_html}</h1>",
+                        unsafe_allow_html=True)
                     st.altair_chart(pie_chart, use_container_width=True)
-            else:
-                st.title("Orders by Weekday/Weekend")
-                st.markdown("""
-                    <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                        <h3 style="font-size: 30px; color: white; font-weight: bold;">No data available for the Weekday vs Weekend analysis.</h3>
-                    </div>
-                """, unsafe_allow_html=True)
-        except:
-            st.title("Orders by Weekday/Weekend")
-            st.markdown("""
-                <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                    <h3 style="font-size: 30px; color: white; font-weight: bold;">No data available for the Weekday vs Weekend analysis.</h3>
-                </div>
-            """, unsafe_allow_html=True)
 
-        # Todo-Total Orders Placed: Days of the Week
-        try:
-            if df_orders is not None and not df_orders.empty:
-                add_tooltip_css()
-                tooltip_html = render_tooltip(
-                    "This chart displays the total number of orders placed on each day of the week. Hover over the sections of the pie chart to view detailed information, including the specific day and the corresponding order count.")
-                st.markdown(
-                    f"<h1 style='display: inline-block;'>Total Orders Placed: Days of the Week {tooltip_html}</h1>",
-                    unsafe_allow_html=True)
+
                 df_orders_ = df_orders.groupby('Order_ID').agg({'Order_Created_At': 'first'}).reset_index()
-                df_orders_['Order_Created_At'] = pd.to_datetime(df_orders_['Order_Created_At'], errors='coerce',
-                                                                utc=True)
-                col1 = st.columns(1)[0]
-                with col1:
+                df_orders_['Order_Created_At'] = pd.to_datetime(df_orders_['Order_Created_At'], errors='coerce',utc=True)
+                # col1 = st.columns(1)[0]
+                with col2:
+
                     df_orders_['days_of_week'] = df_orders_['Order_Created_At'].dt.dayofweek.apply(
                         lambda x: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][x]
                     )
@@ -1896,27 +1866,52 @@ def show_order_data_page():
                                               'Sunday']),
                         tooltip=["Day:N", "Count:Q"]
                     )
-                    st.markdown("<h3 style='text-align: center;'>Orders by Day of the Week</h3>",
-                                unsafe_allow_html=True)
+                    add_tooltip_css()
+                    tooltip_html = render_tooltip(
+                        "This chart displays the total number of orders placed on each day of the week. Hover over the sections of the pie chart to view detailed information, including the specific day and the corresponding order count.")
+                    st.markdown(
+                        f"<h1 style='display: inline-block;'>Total Orders Placed: Days of the Week {tooltip_html}</h1>",
+                        unsafe_allow_html=True)
                     st.altair_chart(pie_chart, use_container_width=True)
             else:
+                with col1:
+                    st.title("Orders by Weekday/Weekend")
+                    st.markdown("""
+                        <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
+                            <h3 style="font-size: 30px; color: white; font-weight: bold;">No data available for the Weekday vs Weekend analysis.</h3>
+                        </div>
+                    """, unsafe_allow_html=True)
+                with col2:
+                    st.title("Orders by Day of the Week")
+                    st.markdown("""
+                                   <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
+                                       <h3 style="font-size: 30px; color: white; font-weight: bold;">No data available for the Days of the Week analysis.</h3>
+                                   </div>
+                               """, unsafe_allow_html=True)
+        except:
+            col1, col2 = st.columns(2)
+            with col1:
+                st.title("Orders by Weekday/Weekend")
+                st.markdown("""
+                    <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
+                        <h3 style="font-size: 30px; color: white; font-weight: bold;">No data available for the Weekday vs Weekend analysis.</h3>
+                    </div>
+                """, unsafe_allow_html=True)
+            with col2:
                 st.title("Orders by Day of the Week")
                 st.markdown("""
                                <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
                                    <h3 style="font-size: 30px; color: white; font-weight: bold;">No data available for the Days of the Week analysis.</h3>
                                </div>
                            """, unsafe_allow_html=True)
-        except:
-            st.markdown("""
-                <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                    <h3 style="font-size: 30px; color: white; font-weight: bold;">No data available for the Days of the Week analysis.</h3>
-                </div>
-            """, unsafe_allow_html=True)
+
+
         # Todo-Total Orders Placed: Hours of the Day-----------------------
         if df_orders is not None and not df_orders.empty:
             df_orders_ = df_orders.groupby('Order_ID').agg({'Order_Created_At': 'first'}).reset_index()
             df_orders_['Order_Created_At'] = pd.to_datetime(df_orders_['Order_Created_At'], errors='coerce', utc=True)
             col1 = st.columns(1)[0]
+
             with col1:
                 df_orders_['hour_of_day'] = df_orders_['Order_Created_At'].dt.hour + 1  # Shift hours to 1-24 range
                 hour_count = df_orders_['hour_of_day'].value_counts().sort_index()
@@ -3393,15 +3388,9 @@ def show_revenue_page():
             """, unsafe_allow_html=True)
 
         # Todo-Total revenue placed: weekday vs weekend-----------------------
+        col1, col2 = st.columns(2)
         try:
             if df_orders is not None and not df_orders.empty:
-                add_tooltip_css()
-                tooltip_html = render_tooltip(
-                    "This pie chart compares the total revenue generated on weekdays and weekends. Hover over the chart to see the category (Weekday or Weekend), the total revenue in euros, and the percentage contribution to the overall revenue.")
-                st.markdown(
-                    f"<h1 style='display: inline-block;'>Total Revenue Placed: Weekday vs Weekend {tooltip_html}</h1>",
-                    unsafe_allow_html=True
-                )
                 df_unique_orders = df_orders.drop_duplicates(subset='Order_ID', keep='first')
                 # Ensure the 'Order_Created_At' column is in datetime format
                 df_unique_orders['Order_Created_At'] = pd.to_datetime(df_unique_orders['Order_Created_At'],
@@ -3432,10 +3421,15 @@ def show_revenue_page():
                     tooltip=["Category", "Total_Revenue:N", "Percentage"]
                 )
                 # Display the results in Streamlit
-                st.write(f"Weekday Revenue: €{weekday_revenue:.2f} ({(weekday_revenue / sum(revenues)) * 100:.2f}%)")
-                st.write(f"Weekend Revenue: €{weekend_revenue:.2f} ({(weekend_revenue / sum(revenues)) * 100:.2f}%)")
-                st.markdown("<h3 style='text-align: center;'>Revenue by Weekday/Weekend</h3>", unsafe_allow_html=True)
-                st.altair_chart(pie_chart_revenue, use_container_width=True)
+                # st.write(f"Weekday Revenue: €{weekday_revenue:.2f} ({(weekday_revenue / sum(revenues)) * 100:.2f}%)")
+                # st.write(f"Weekend Revenue: €{weekend_revenue:.2f} ({(weekend_revenue / sum(revenues)) * 100:.2f}%)")
+                # st.markdown("<h3 style='text-align: center;'>Revenue by Weekday/Weekend</h3>", unsafe_allow_html=True)
+                with col1:
+                    add_tooltip_css()
+                    tooltip_html = render_tooltip("This pie chart compares the total revenue generated on weekdays and weekends. Hover over the chart to see the category (Weekday or Weekend), the total revenue in euros, and the percentage contribution to the overall revenue.")
+                    st.markdown(f"<h1 style='display: inline-block;'>Total Revenue Placed: Weekday vs Weekend {tooltip_html}</h1>",unsafe_allow_html=True
+                    )
+                    st.altair_chart(pie_chart_revenue, use_container_width=True)
             else:
                 st.title("Total Revenue Placed: Weekday vs Weekend")
                 st.markdown("""
@@ -3443,18 +3437,11 @@ def show_revenue_page():
                            <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Total Revenue Placed: Weekday vs Weekend</h3>
                        </div>
                    """, unsafe_allow_html=True)
-        except:
-            st.markdown(
-                f"<h3 style='font-size: 30px; color: red; text-align: center;'><b>Datasets Currently is unavaialbe</b></h3>",
-                unsafe_allow_html=True)
 
-        # Todo-Total revenue placed: days of week--------------------------
-        try:
+            # Todo-Total revenue placed: days of week--------------------------
             if df_orders is not None and not df_orders.empty:
                 df_unique_orders = df_orders.drop_duplicates(subset='Order_ID', keep='first')
-                df_unique_orders['Order_Created_At'] = pd.to_datetime(df_unique_orders['Order_Created_At'],
-                                                                      errors='coerce',
-                                                                      utc=True)
+                df_unique_orders['Order_Created_At'] = pd.to_datetime(df_unique_orders['Order_Created_At'],errors='coerce',utc=True)
                 df_unique_orders['days_of_week'] = df_unique_orders['Order_Created_At'].dt.dayofweek.apply(
                     lambda x: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][x]
                 )
@@ -3474,14 +3461,14 @@ def show_revenue_page():
                                           'Sunday']),
                     tooltip=["Day:N", "Total_Revenue:N"]
                 )
-                add_tooltip_css()
-                tooltip_html = render_tooltip(
-                    "This pie chart visualizes the total revenue generated for each day of the week. Hover over the chart to view the specific day, total revenue in euros, and its contribution to the overall revenue.")
-                st.markdown(
-                    f"<h1 style='display: inline-block;'>Total Revenue Placed: Days of the Week {tooltip_html}</h1>",
-                    unsafe_allow_html=True)
-                st.markdown("<h3 style='text-align: center;'>Revenue by Day of the Week</h3>", unsafe_allow_html=True)
-                st.altair_chart(pie_chart_revenue, use_container_width=True)
+                with col2:
+                    add_tooltip_css()
+                    tooltip_html = render_tooltip(
+                        "This pie chart visualizes the total revenue generated for each day of the week. Hover over the chart to view the specific day, total revenue in euros, and its contribution to the overall revenue.")
+                    st.markdown(
+                        f"<h1 style='display: inline-block;'>Total Revenue Placed: Days of the Week {tooltip_html}</h1>",
+                        unsafe_allow_html=True)
+                    st.altair_chart(pie_chart_revenue, use_container_width=True)
             else:
                 st.title("Total Revenue Placed: Days of the Week")
                 st.markdown("""
@@ -3490,9 +3477,21 @@ def show_revenue_page():
                        </div>
                    """, unsafe_allow_html=True)
         except:
-            st.markdown(
-                f"<h3 style='font-size: 30px; color: red; text-align: center;'><b>Datasets Currently is unavaialbe</b></h3>",
-                unsafe_allow_html=True)
+            with col1:
+                st.title("Total Revenue Placed: Weekday vs Weekend")
+                st.markdown("""
+                       <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
+                           <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Total Revenue Placed: Weekday vs Weekend</h3>
+                       </div>
+                   """, unsafe_allow_html=True)
+            with col2:
+                st.title("Total Revenue Placed: Days of the Week")
+                st.markdown("""
+                       <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
+                           <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Total Revenue Placed: Days of the Week</h3>
+                       </div>
+                   """, unsafe_allow_html=True)
+
 
         # Todo---Total revenue placed: hours of day-------------------------------
         try:
