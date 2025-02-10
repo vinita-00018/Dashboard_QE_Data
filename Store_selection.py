@@ -603,81 +603,193 @@ def show_cj_page():
         st.title('Customer Journey Data')
         add_custom_css()
         # Todo-Customer Journey Diagram:
+        # if df_cj is not None and not df_cj.empty:
+        #     add_tooltip_css()
+        #     tooltip_html = render_tooltip(f"Customer Journey from start to end on page")
+        #     st.markdown(f"<h1 style='display: inline-block;'>Customer Journey {tooltip_html}</h1>",unsafe_allow_html=True)
+        #     df_filtered = df_cj[['Event', 'Customer_IP']]
+        #     # Remove rows where Event is NaN
+        #     df_filtered = df_filtered.dropna(subset=['Event'])
+        #     # Remove duplicates to get unique customer events
+        #     df_filtered = df_filtered.drop_duplicates(subset=['Customer_IP', 'Event'])
+        #     # Create a list of events in order
+        #     event_order = ['Home', 'Collection', 'Search', 'Product', 'Cart', 'Cart Add','Cart Update','Cart Remove']  # Adjust based on actual events
+        #     # Sort the events by their order
+        #     df_filtered['Event'] = pd.Categorical(df_filtered['Event'], categories=event_order, ordered=True)
+        #
+        #     df_filtered = df_filtered.sort_values(by=['Customer_IP', 'Event'])
+        #     # Create a list to track the transition of customers
+        #     transitions = []
+        #     # Track how many customers are at each event
+        #     event_counts = df_filtered['Event'].value_counts().to_dict()
+        #     for customer in df_filtered['Customer_IP'].unique():
+        #         customer_events = df_filtered[df_filtered['Customer_IP'] == customer]['Event'].tolist()
+        #         for i in range(1, len(customer_events)):
+        #             transitions.append((customer_events[i - 1], customer_events[i]))
+        #     # Count the number of customers transitioning between events
+        #     transition_counts = pd.Series(transitions).value_counts()
+        #     # Prepare the nodes and links for the Sankey diagram
+        #     unique_events = list(event_order)
+        #     node_mapping = {event: index for index, event in enumerate(unique_events)}
+        #     # Create nodes (Event Types)
+        #     nodes = unique_events
+        #     # Create links (Transitions)
+        #     links = []
+        #     drop_offs = {}  # Dictionary to store drop-off counts
+        #     for (from_event, to_event), count in transition_counts.items():
+        #         # Check if the events are valid before creating links
+        #         if from_event in node_mapping and to_event in node_mapping:
+        #             links.append({
+        #                 'source': node_mapping[from_event],
+        #                 'target': node_mapping[to_event],
+        #                 'value': count
+        #             })
+        #             total_at_event = event_counts.get(from_event, 0)
+        #             total_transitions = sum(link['value'] for link in links if nodes[link['source']] == from_event)
+        #             drop_off_count = total_at_event - total_transitions
+        #             drop_offs[(from_event, to_event)] = drop_off_count
+        #     link_labels = []
+        #     for (from_event, to_event), count in transition_counts.items():
+        #         drop_off_count = drop_offs.get((from_event, to_event), 0)
+        #         link_labels.append(f"Drop-off: {drop_off_count}")
+        #     sankey_figure = go.Figure(go.Sankey(
+        #         node=dict(
+        #             pad=20,
+        #             thickness=20,
+        #             line=dict(color="black", width=0.5),
+        #             label=nodes,
+        #             color=["#ff9259", "#66b3ff", "#99ff99", "#ffcc99", "#ff9789", "#66b2ff", "#99ff19", "#ffcc69"]
+        #         ),
+        #         link=dict(
+        #             source=[link['source'] for link in links],
+        #             target=[link['target'] for link in links],
+        #             value=[link['value'] for link in links],
+        #             # color=["rgba(255, 0, 0, 0.4)" for _ in links],  # Link color can be adjusted here
+        #             color=["rgba(30, 144, 255, 0.4)" for _ in links],  # Link color can be adjusted here
+        #             # color=["rgba(220, 20, 60, 0.4)" for _ in links],  # Link color can be adjusted here
+        #             label=link_labels  # Add the link labels with drop-off count
+        #         )
+        #     ))
+        #     st.plotly_chart(sankey_figure, use_container_width=True)
+        # else:
+        #     st.title("Customer Journey From start to end")
+        #     st.markdown("""
+        #                     <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
+        #                         <h3 style="font-size: 30px; color: white; font-weight: bold;">No Customer Journey Data Available</h3>
+        #                     </div>
+        #                     """, unsafe_allow_html=True)
+        #Todo-Customer Journey Data---------------------------
         if df_cj is not None and not df_cj.empty:
-            add_tooltip_css()
-            tooltip_html = render_tooltip(f"Customer Journey from start to end on every page")
-            st.markdown(f"<h1 style='display: inline-block;'>Customer Journey {tooltip_html}</h1>",unsafe_allow_html=True)
-            df_filtered = df_cj[['Event', 'Customer_IP']]
-            # Remove rows where Event is NaN
-            df_filtered = df_filtered.dropna(subset=['Event'])
-            # Remove duplicates to get unique customer events
-            df_filtered = df_filtered.drop_duplicates(subset=['Customer_IP', 'Event'])
-            # Create a list of events in order
-            event_order = ['Home', 'Collection', 'Search', 'Product', 'Cart', 'Cart Add','Cart Update','Cart Remove']  # Adjust based on actual events
-            # Sort the events by their order
-            df_filtered['Event'] = pd.Categorical(df_filtered['Event'], categories=event_order, ordered=True)
+            with st.container():
+                add_tooltip_css()
+                tooltip_html = render_tooltip(f"Select Date Range from start to end")
+                st.markdown(f"<h1 style='display: inline-block;'>Select Date Range {tooltip_html}</h1>",unsafe_allow_html=True)
+                col1, col2 = st.columns(2)
+                with col1:
+                    start_date = st.date_input("Start Date", df_cj['Event_Time'].min().date())
+                with col2:
+                    end_date = st.date_input("End Date", df_cj['Event_Time'].max().date())
 
-            df_filtered = df_filtered.sort_values(by=['Customer_IP', 'Event'])
-            # Create a list to track the transition of customers
-            transitions = []
-            # Track how many customers are at each event
-            event_counts = df_filtered['Event'].value_counts().to_dict()
-            for customer in df_filtered['Customer_IP'].unique():
-                customer_events = df_filtered[df_filtered['Customer_IP'] == customer]['Event'].tolist()
-                for i in range(1, len(customer_events)):
-                    transitions.append((customer_events[i - 1], customer_events[i]))
-            # Count the number of customers transitioning between events
-            transition_counts = pd.Series(transitions).value_counts()
-            # Prepare the nodes and links for the Sankey diagram
-            unique_events = list(event_order)
-            node_mapping = {event: index for index, event in enumerate(unique_events)}
-            # Create nodes (Event Types)
-            nodes = unique_events
-            # Create links (Transitions)
-            links = []
-            drop_offs = {}  # Dictionary to store drop-off counts
-            for (from_event, to_event), count in transition_counts.items():
-                # Check if the events are valid before creating links
-                if from_event in node_mapping and to_event in node_mapping:
-                    links.append({
-                        'source': node_mapping[from_event],
-                        'target': node_mapping[to_event],
-                        'value': count
-                    })
-                    total_at_event = event_counts.get(from_event, 0)
-                    total_transitions = sum(link['value'] for link in links if nodes[link['source']] == from_event)
-                    drop_off_count = total_at_event - total_transitions
-                    drop_offs[(from_event, to_event)] = drop_off_count
-            link_labels = []
-            for (from_event, to_event), count in transition_counts.items():
-                drop_off_count = drop_offs.get((from_event, to_event), 0)
-                link_labels.append(f"Drop-off: {drop_off_count}")
-            sankey_figure = go.Figure(go.Sankey(
-                node=dict(
-                    pad=20,
-                    thickness=20,
-                    line=dict(color="black", width=0.5),
-                    label=nodes,
-                    color=["#ff9259", "#66b3ff", "#99ff99", "#ffcc99", "#ff9789", "#66b2ff", "#99ff19", "#ffcc69"]
-                ),
-                link=dict(
-                    source=[link['source'] for link in links],
-                    target=[link['target'] for link in links],
-                    value=[link['value'] for link in links],
-                    # color=["rgba(255, 0, 0, 0.4)" for _ in links],  # Link color can be adjusted here
-                    color=["rgba(30, 144, 255, 0.4)" for _ in links],  # Link color can be adjusted here
-                    # color=["rgba(220, 20, 60, 0.4)" for _ in links],  # Link color can be adjusted here
-                    label=link_labels  # Add the link labels with drop-off count
+            start_date = pd.Timestamp(start_date).tz_localize('UTC')
+            end_date = pd.Timestamp(end_date).tz_localize('UTC')
+            filtered_df = df_cj[(df_cj['Event_Time'] >= start_date) & (df_cj['Event_Time'] <= end_date)]
+
+            if filtered_df.empty:
+                st.warning(f"No data available for the selected date range: {start_date} to {end_date}")
+            else:
+                filtered_df = (
+                    filtered_df[['Event_Time', 'Event', 'Customer_IP']]
+                    .dropna(subset=['Event', 'Customer_IP'])
+                    .drop_duplicates(subset=['Customer_IP', 'Event'])  # Remove duplicate events per session
                 )
-            ))
-            st.plotly_chart(sankey_figure, use_container_width=True)
-        else:
-            st.title("Customer Journey From start to end")
-            st.markdown("""
-                            <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                                <h3 style="font-size: 30px; color: white; font-weight: bold;">No Customer Journey Data Available</h3>
-                            </div>
-                            """, unsafe_allow_html=True)
+                filtered_df = filtered_df.sort_values(by=['Customer_IP', 'Event_Time'])
+
+                def convert_seconds(seconds):
+                    if seconds < 60:
+                        return "< 1 min"
+                    hours = int(seconds // 3600)
+                    minutes = int((seconds % 3600) // 60)
+                    return f"{hours} hr {minutes} min" if hours > 0 else f"{minutes} min"
+
+                filtered_df['Time_Spent'] = (
+                    filtered_df.groupby(['Customer_IP'])['Event_Time']
+                    .diff()
+                    .dt.total_seconds()
+                )
+
+                filtered_df['Time_Spent'] = filtered_df['Time_Spent'].fillna(0)
+                filtered_df['Total_Time_Spent'] = filtered_df['Time_Spent'].apply(
+                    convert_seconds)  # Updated Column Name
+                ip_time_spent = filtered_df.groupby('Customer_IP')['Time_Spent'].sum().reset_index()
+                ip_time_spent = ip_time_spent.sort_values(by='Time_Spent', ascending=False)
+                filtered_df['Customer_IP'] = pd.Categorical(filtered_df['Customer_IP'],
+                                                            categories=ip_time_spent['Customer_IP'], ordered=True)
+                filtered_df = filtered_df.sort_values(by=['Customer_IP', 'Time_Spent'], ascending=[True, False])
+
+                # Display Sankey Diagram after dataframe
+                with st.container():
+                    df_cj['Session_ID'] = df_cj.groupby(['Customer_IP', 'session']).ngroup() + 1
+                    df_filtered = df_cj[['Event', 'Session_ID']].dropna(subset=['Event'])
+                    df_filtered = df_filtered.drop_duplicates(subset=['Session_ID', 'Event'])
+
+                    event_order = ['Home', 'Collection', 'Search', 'Product', 'Cart', 'Cart Add', 'Cart Remove',
+                                   'Cart Update']
+                    df_filtered['Event'] = pd.Categorical(df_filtered['Event'], categories=event_order, ordered=True)
+                    df_filtered = df_filtered.sort_values(by=['Session_ID', 'Event'])
+
+                    transitions = []
+                    for session, group in df_filtered.groupby('Session_ID'):
+                        events = group['Event'].tolist()
+                        levels = [f"{event}_{i}" for i, event in enumerate(events)]
+
+                        for i in range(len(levels)):
+                            if i < len(levels) - 1:
+                                transitions.append((levels[i], levels[i + 1]))
+
+                            drop_off = f"Drop-off_{i}"
+                            transitions.append((levels[i], drop_off))
+
+                    drop_off_nodes = [f"Drop-off_{i}" for i in range(len(event_order))]
+
+                    transition_counts = pd.DataFrame(transitions, columns=['Source', 'Target'])
+                    transition_counts = transition_counts.groupby(['Source', 'Target']).size().reset_index(name='Count')
+
+                    unique_events = list(set(transition_counts['Source']).union(set(transition_counts['Target'])))
+                    node_indices = {event: i for i, event in enumerate(unique_events)}
+
+                    source = [node_indices[src] for src in transition_counts['Source']]
+                    target = [node_indices[tgt] for tgt in transition_counts['Target']]
+                    value = transition_counts['Count'].tolist()
+
+                    sankey_figure = go.Figure(go.Sankey(
+                        node=dict(
+                            pad=20,
+                            thickness=20,
+                            line=dict(color="black", width=0.5),
+                            label=unique_events,
+                            color=["#ff9259", "#66b3ff", "#99ff99", "#ffcc99"] * (len(unique_events) // 4 + 1)
+                        ),
+                        link=dict(
+                            source=source,
+                            target=target,
+                            value=value,
+                            color=["rgba(30, 144, 255, 0.4)" for _ in value]
+                        )
+                    ))
+
+                    add_tooltip_css()
+                    tooltip_html = render_tooltip(f"Customer Journey flow from start to end you can see incoming and outgoing data and drop off data of each level")
+                    st.markdown(f"<h1 style='display: inline-block;'>Customer Journey Flow {tooltip_html}</h1>", unsafe_allow_html=True)
+                    st.plotly_chart(sankey_figure, use_container_width=True)
+
+                # st.write("### Customer IP-wise Time Spent on Each Page")
+                add_tooltip_css()
+                tooltip_html = render_tooltip(
+                    f"Customer IP-wise Time Spent on Each Page")
+                st.markdown(f"<h1 style='display: inline-block;'>Customer IP-wise Time Spent on Each Page {tooltip_html}</h1>",
+                            unsafe_allow_html=True)
+                with st.expander("View Full Table", expanded=True):
+                    st.dataframe(filtered_df[['Customer_IP', 'Event', 'Total_Time_Spent']], use_container_width=True)
 
 
         # Todo- Card Creation for the above
