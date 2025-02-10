@@ -6,6 +6,7 @@ from datetime import datetime
 from wordcloud import WordCloud
 import io
 import os
+import plotly.graph_objects as go
 
 def add_tooltip_css():
     st.markdown(f"""
@@ -213,8 +214,7 @@ def show_customer_data_page():
         if df_customers is not None and not df_customers.empty:
             with col1:
                 if df_customers is None or df_customers.empty:
-                    st.markdown("<h1 style='color: blue; text-align: center;'>Listed Customers Data Unavailable</h1>",
-                                unsafe_allow_html=True)
+                    st.markdown("<h1 style='color: blue; text-align: center;'>Listed Customers Data Unavailable</h1>",unsafe_allow_html=True)
                     st.markdown("""
                         <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
                             <h3 style="font-size: 30px; color: white; font-weight: bold;">No data available for listed customers.</h3>
@@ -602,6 +602,84 @@ def show_cj_page():
     try:
         st.title('Customer Journey Data')
         add_custom_css()
+        # Todo-Customer Journey Diagram:
+        if df_cj is not None and not df_cj.empty:
+            add_tooltip_css()
+            tooltip_html = render_tooltip(f"Customer Journey from start to end on page")
+            st.markdown(f"<h1 style='display: inline-block;'>Customer Journey {tooltip_html}</h1>",unsafe_allow_html=True)
+            df_filtered = df_cj[['Event', 'Customer_IP']]
+            # Remove rows where Event is NaN
+            df_filtered = df_filtered.dropna(subset=['Event'])
+            # Remove duplicates to get unique customer events
+            df_filtered = df_filtered.drop_duplicates(subset=['Customer_IP', 'Event'])
+            # Create a list of events in order
+            event_order = ['Home', 'Collection', 'Search', 'Product', 'Cart', 'Cart Add','Cart Update','Cart Remove']  # Adjust based on actual events
+            # Sort the events by their order
+            df_filtered['Event'] = pd.Categorical(df_filtered['Event'], categories=event_order, ordered=True)
+
+            df_filtered = df_filtered.sort_values(by=['Customer_IP', 'Event'])
+            # Create a list to track the transition of customers
+            transitions = []
+            # Track how many customers are at each event
+            event_counts = df_filtered['Event'].value_counts().to_dict()
+            for customer in df_filtered['Customer_IP'].unique():
+                customer_events = df_filtered[df_filtered['Customer_IP'] == customer]['Event'].tolist()
+                for i in range(1, len(customer_events)):
+                    transitions.append((customer_events[i - 1], customer_events[i]))
+            # Count the number of customers transitioning between events
+            transition_counts = pd.Series(transitions).value_counts()
+            # Prepare the nodes and links for the Sankey diagram
+            unique_events = list(event_order)
+            node_mapping = {event: index for index, event in enumerate(unique_events)}
+            # Create nodes (Event Types)
+            nodes = unique_events
+            # Create links (Transitions)
+            links = []
+            drop_offs = {}  # Dictionary to store drop-off counts
+            for (from_event, to_event), count in transition_counts.items():
+                # Check if the events are valid before creating links
+                if from_event in node_mapping and to_event in node_mapping:
+                    links.append({
+                        'source': node_mapping[from_event],
+                        'target': node_mapping[to_event],
+                        'value': count
+                    })
+                    total_at_event = event_counts.get(from_event, 0)
+                    total_transitions = sum(link['value'] for link in links if nodes[link['source']] == from_event)
+                    drop_off_count = total_at_event - total_transitions
+                    drop_offs[(from_event, to_event)] = drop_off_count
+            link_labels = []
+            for (from_event, to_event), count in transition_counts.items():
+                drop_off_count = drop_offs.get((from_event, to_event), 0)
+                link_labels.append(f"Drop-off: {drop_off_count}")
+            sankey_figure = go.Figure(go.Sankey(
+                node=dict(
+                    pad=20,
+                    thickness=20,
+                    line=dict(color="black", width=0.5),
+                    label=nodes,
+                    color=["#ff9259", "#66b3ff", "#99ff99", "#ffcc99", "#ff9789", "#66b2ff", "#99ff19", "#ffcc69"]
+                ),
+                link=dict(
+                    source=[link['source'] for link in links],
+                    target=[link['target'] for link in links],
+                    value=[link['value'] for link in links],
+                    # color=["rgba(255, 0, 0, 0.4)" for _ in links],  # Link color can be adjusted here
+                    color=["rgba(30, 144, 255, 0.4)" for _ in links],  # Link color can be adjusted here
+                    # color=["rgba(220, 20, 60, 0.4)" for _ in links],  # Link color can be adjusted here
+                    label=link_labels  # Add the link labels with drop-off count
+                )
+            ))
+            st.plotly_chart(sankey_figure, use_container_width=True)
+        else:
+            st.title("Customer Journey From start to end")
+            st.markdown("""
+                            <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
+                                <h3 style="font-size: 30px; color: white; font-weight: bold;">No Customer Journey Data Available</h3>
+                            </div>
+                            """, unsafe_allow_html=True)
+
+
         # Todo- Card Creation for the above
         col1, col2, col3 = st.columns(3)
         if df_cj is not None and not df_cj.empty:
