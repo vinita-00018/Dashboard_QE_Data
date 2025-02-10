@@ -605,7 +605,7 @@ def show_cj_page():
         # Todo-Customer Journey Diagram:
         if df_cj is not None and not df_cj.empty:
             add_tooltip_css()
-            tooltip_html = render_tooltip(f"Customer Journey from start to end on page")
+            tooltip_html = render_tooltip(f"Customer Journey from start to end on every page")
             st.markdown(f"<h1 style='display: inline-block;'>Customer Journey {tooltip_html}</h1>",unsafe_allow_html=True)
             df_filtered = df_cj[['Event', 'Customer_IP']]
             # Remove rows where Event is NaN
