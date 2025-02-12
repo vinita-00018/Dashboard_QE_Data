@@ -320,6 +320,7 @@ def show_customer_data_page():
                                 <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Repeat Customers</h3>
                                 </div>
                                 """, unsafe_allow_html=True)
+
         if df_customers is not None and not df_customers.empty:
             add_tooltip_css()
             tooltip_html = render_tooltip("Preview of customer data filtered by the selected date range.")
@@ -578,7 +579,9 @@ def show_customer_data_page():
                             <h3 style="font-size: 30px; color: white; font-weight: bold;">No data available for unique customers by country.</h3>
                         </div>
                     """, unsafe_allow_html=True)
+
         else:
+
             with chart_col1:
                 st.title("Unique Customers by Province")
                 st.markdown("""
@@ -586,6 +589,7 @@ def show_customer_data_page():
                         <h3 style="font-size: 30px; color: white; font-weight: bold;">No data available for unique customers by province.</h3>
                     </div>
                 """, unsafe_allow_html=True)
+
             with chart_col2:
                 st.title("Unique Customers by Country")
                 st.markdown("""
@@ -603,6 +607,7 @@ def show_cj_page():
         st.title('Customer Journey Data')
         add_custom_css()
         # Todo-Customer Journey Diagram:
+
         # if df_cj is not None and not df_cj.empty:
         #     add_tooltip_css()
         #     tooltip_html = render_tooltip(f"Customer Journey from start to end on page")
@@ -678,6 +683,7 @@ def show_cj_page():
         #                         <h3 style="font-size: 30px; color: white; font-weight: bold;">No Customer Journey Data Available</h3>
         #                     </div>
         #                     """, unsafe_allow_html=True)
+
         #Todo-Customer Journey Data---------------------------
         if df_cj is not None and not df_cj.empty:
             with st.container():
@@ -2279,271 +2285,181 @@ def show_order_data_page():
 
         # Todo--Average orders per customer
         col1, col2, col3, col4 = st.columns(4)
-        if df_orders is not None and not df_orders.empty:
-            orders_per_customer = df_orders.groupby('Customer_ID')['Order_ID'].nunique().reset_index()
-            average_orders_per_customer = orders_per_customer['Order_ID'].mean()
-            average_orders_per_customer = round(average_orders_per_customer, 2)
-            # Total canceled orders
-            total_canceled_orders = df_orders[df_orders['Order_Cancelled_At'].notna()].shape[0]
-            # Most orders placed by a customer
-            customer_order_counts = df_orders.groupby('Customer_ID')['Order_ID'].nunique()
-            max_orders = customer_order_counts.max()
-            # Average order value
-            order_data = df_orders.groupby('Order_ID').agg({'Order_Total_Price': 'first'}).reset_index()
-            average_order_value = order_data['Order_Total_Price'].mean()
-            average_order_value = round(average_order_value, 2)
-            # For average orders per customer
-            with col1:
-                if df_orders is not None and not df_orders.empty:
-                    st.title("Avg orders")
-                    st.markdown("""
-                        <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                            <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Average Orders per Customer.</h3>
-                        </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    add_tooltip_css()
-                    tooltip_html = render_tooltip(
-                        f"The average number of orders placed per customer is {average_orders_per_customer}")
-                    st.markdown(
-                        f"<h1 style='display: inline-block;'>Avg orders {tooltip_html}</h1>", unsafe_allow_html=True
-                    )
-                    st.markdown(
-                        f"""
-                            <div class="card">
-                                <p>Average orders per customer</p>
-                                <h1>{average_orders_per_customer}</h1>
-                            </div>
-                            """,
-                        unsafe_allow_html=True
-                    )
 
-            # For total canceled orders
-            with col2:
-                if df_orders is not None and not df_orders.empty:
-                    st.title("Order Cancel")
-                    st.markdown("""
-                        <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                            <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Total Canceled Orders.</h3>
-                        </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    add_tooltip_css()
-                    tooltip_html = render_tooltip(f"The total number of canceled orders is {total_canceled_orders}")
-                    st.markdown(
-                        f"<h1 style='display: inline-block;'>Order Cancel{tooltip_html}</h1>", unsafe_allow_html=True
-                    )
-                    st.markdown(
-                        f"""
-                            <div class="card">
-                                <p>Total orders cancelled</p>
-                                <h1>{total_canceled_orders}</h1>
-                            </div>
-                            """,
-                        unsafe_allow_html=True
-                    )
+        orders_per_customer = df_orders.groupby('Customer_ID')['Order_ID'].nunique().reset_index()
+        average_orders_per_customer = orders_per_customer['Order_ID'].mean()
+        average_orders_per_customer = round(average_orders_per_customer, 2)
+        # Total canceled orders
+        total_canceled_orders = df_orders[df_orders['Order_Cancelled_At'].notna()].shape[0]
+        # Most orders placed by a customer
+        customer_order_counts = df_orders.groupby('Customer_ID')['Order_ID'].nunique()
+        max_orders = customer_order_counts.max()
+        # Average order value
+        order_data = df_orders.groupby('Order_ID').agg({'Order_Total_Price': 'first'}).reset_index()
+        average_order_value = order_data['Order_Total_Price'].mean()
+        average_order_value = round(average_order_value, 2)
+        # For average orders per customer
+        with col1:
+            add_tooltip_css()
+            tooltip_html = render_tooltip(
+                f"The average number of orders placed per customer is {average_orders_per_customer}")
+            st.markdown(
+                f"<h1 style='display: inline-block;'>Avg orders {tooltip_html}</h1>", unsafe_allow_html=True
+            )
+            st.markdown(
+                f"""
+                    <div class="card">
+                        <p>Average orders per customer</p>
+                        <h1>{average_orders_per_customer}</h1>
+                    </div>
+                    """,
+                unsafe_allow_html=True
+            )
+        # For total canceled orders
+        with col2:
+            add_tooltip_css()
+            tooltip_html = render_tooltip(f"The total number of canceled orders is {total_canceled_orders}")
+            st.markdown(
+                f"<h1 style='display: inline-block;'>Order Cancel{tooltip_html}</h1>", unsafe_allow_html=True
+            )
+            st.markdown(
+                f"""
+                    <div class="card">
+                        <p>Total orders cancelled</p>
+                        <h1>{total_canceled_orders}</h1>
+                    </div>
+                    """,
+                unsafe_allow_html=True
+            )
 
-            # For most orders placed by a customer
-            with col3:
-                if df_orders is not None and not df_orders.empty:
-                    st.title("Max orders")
-                    st.markdown("""
-                        <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                            <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Most Orders by Customer.</h3>
-                        </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    add_tooltip_css()
-                    tooltip_html = render_tooltip(
-                        f"The maximum number of orders placed by a single customer is {max_orders}")
-                    st.markdown(
-                        f"<h1 style='display: inline-block;'>Max orders {tooltip_html}</h1>", unsafe_allow_html=True
-                    )
-                    st.markdown(
-                        f"""
-                            <div class="card">
-                                <p>Most orders placed by a customer</p>
-                                <h1>{max_orders}</h1>
-                            </div>
-                            """,
-                        unsafe_allow_html=True
-                    )
-            # For average order value
-            with col4:
-                if df_orders is not None and not df_orders.empty:
-                    st.title("Order Value")
-                    st.markdown("""
-                        <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                            <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Average Order Value.</h3>
-                        </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    add_tooltip_css()
-                    tooltip_html = render_tooltip(f"The average order value is €{average_order_value}")
-                    st.markdown(
-                        f"<h1 style='display: inline-block;'>Order Value {tooltip_html}</h1>", unsafe_allow_html=True
-                    )
-                    st.markdown(
-                        f"""
-                            <div class="card">
-                                <p>Average order value</p>
-                                <h1>{average_order_value}</h1>
-                            </div>
-                            """,
-                        unsafe_allow_html=True
-                    )
-        else:
-            with col1:
-                st.title("Avg orders")
-                st.markdown("""
-                    <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                        <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Average Orders per Customer.</h3>
+        # For most orders placed by a customer
+        with col3:
+            add_tooltip_css()
+            tooltip_html = render_tooltip(
+                f"The maximum number of orders placed by a single customer is {max_orders}")
+            st.markdown(
+                f"<h1 style='display: inline-block;'>Max orders {tooltip_html}</h1>", unsafe_allow_html=True
+            )
+            st.markdown(
+                f"""
+                    <div class="card">
+                        <p>Most orders placed by a customer</p>
+                        <h1>{max_orders}</h1>
                     </div>
-                """, unsafe_allow_html=True)
-            with col2:
-                st.title("Order Cancel")
-                st.markdown("""
-                    <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                        <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Total Canceled Orders.</h3>
+                    """,
+                unsafe_allow_html=True
+            )
+        # For average order value
+        with col4:
+            add_tooltip_css()
+            tooltip_html = render_tooltip(f"The average order value is €{average_order_value}")
+            st.markdown(
+                f"<h1 style='display: inline-block;'>Order Value {tooltip_html}</h1>", unsafe_allow_html=True
+            )
+            st.markdown(
+                f"""
+                    <div class="card">
+                        <p>Average order value</p>
+                        <h1>{average_order_value}</h1>
                     </div>
-                """, unsafe_allow_html=True)
-            with col3:
-                st.title("Max orders")
-                st.markdown("""
-                    <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                        <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Most Orders by Customer.</h3>
-                    </div>
-                """, unsafe_allow_html=True)
-            with col4:
-                st.title("Order Value")
-                st.markdown("""
-                    <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                        <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Order Value by Customer.</h3>
-                    </div>
-                """, unsafe_allow_html=True)
+                    """,
+                unsafe_allow_html=True
+            )
+
 
         # Todo-Highest valued orders and Least valued orders-------------------------------------
         chart_col1, chart_col2 = st.columns(2)
-        if df_orders is not None and not df_orders.empty:
-            order_data = df_orders.groupby('Customer_Name').agg(
-                {'Order_ID': 'first', 'Order_Total_Price': 'first'}).reset_index()
-            order_data = order_data.dropna(subset=['Order_ID'])
-            top_customers = order_data.nlargest(50, 'Order_Total_Price')
-            least_customers = order_data.nsmallest(50, 'Order_Total_Price')
 
-            # For Highest Valued Orders
-            with chart_col1:
-                if df_orders is not None and not df_orders.empty:
-                    st.title("Highest valued orders")
-                    st.markdown("""
-                        <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                            <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Highest Valued Orders.</h3>
-                        </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    add_tooltip_css()
-                    tooltip_html = render_tooltip(
-                        "This bar chart displays the top N customers by their total order price. Hover over each bar to view the customer name and the corresponding total order price in euros.")
-                    st.markdown(
-                        f"<h1 style='display: inline-block;'>Highest valued orders {tooltip_html}</h1>",
-                        unsafe_allow_html=True
-                    )
-                    top_n = st.slider("Select Top N Customers to Display", min_value=1, max_value=50, value=5,
-                                      key="top_n_largest")
-                    top_customers_filtered = top_customers.nlargest(top_n, 'Order_Total_Price')
-                    st.markdown("<h3 style='text-align: center;'>Top N Customers by Total Order Price</h3>",
-                                unsafe_allow_html=True)
-                    # Create bar chart for Top N Customers
-                    top_chart = alt.Chart(top_customers_filtered).mark_bar().encode(
-                        x=alt.X('Customer_Name:O', title='Customer Name',
-                                sort=top_customers_filtered['Order_Total_Price'].tolist()),
-                        # Customer_Name on X-axis
-                        y=alt.Y('Order_Total_Price:Q', title='Total Order Price (€)'),  # Order_Total_Price on Y-axis
-                        color=alt.Color('Order_Total_Price:Q', legend=None),  # Color bars by Order_Total_Price
-                        tooltip=['Customer_Name:N',
-                                 alt.Tooltip('Order_Total_Price:Q', title='Total Order Price (€)', format=".2f")]
-                    ).properties(width=350, height=300)
-                    # Add text on bars
-                    top_chart_text = top_chart.mark_text(
-                        align='center',
-                        baseline='middle',
-                        dy=-10,  # Adjust text position
-                        fontSize=12
-                    ).encode(
-                        text=alt.Text('Order_Total_Price:Q', format=".2f")
-                        # Add € symbol and format to 2 decimal places
-                    )
-                    top_chart = top_chart + top_chart_text
-                    top_chart = top_chart.configure_axis(
-                        labelAngle=0,
-                        labelFontSize=14,
-                        titleFontSize=16
-                    )
-                    st.altair_chart(top_chart, use_container_width=True)
+        order_data = df_orders.groupby('Customer_Name').agg(
+            {'Order_ID': 'first', 'Order_Total_Price': 'first'}).reset_index()
+        order_data = order_data.dropna(subset=['Order_ID'])
+        top_customers = order_data.nlargest(50, 'Order_Total_Price')
+        least_customers = order_data.nsmallest(50, 'Order_Total_Price')
 
-            # For Least Valued Orders
-            with chart_col2:
-                if df_orders is not None and not df_orders.empty:
-                    st.title("Least valued orders")
-                    st.markdown("""
-                        <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                            <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Least Valued Orders.</h3>
-                        </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    add_tooltip_css()
-                    tooltip_html = render_tooltip(
-                        "This bar chart displays the least N customers by their total order price. Hover over each bar to view the customer name and the corresponding total order price in euros.")
-                    st.markdown(
-                        f"<h1 style='display: inline-block;'>Least valued orders {tooltip_html}</h1>",
-                        unsafe_allow_html=True
-                    )
-                    least_n = st.slider("Select Least N Customers to Display", min_value=1, max_value=50, value=5,
-                                        key="top_n_smallest")
-                    least_customers_filtered = least_customers.nsmallest(least_n, 'Order_Total_Price')
-                    st.markdown("<h3 style='text-align: center;'>Least N Customers by Total Order Price</h3>",
-                                unsafe_allow_html=True)
-                    least_chart = alt.Chart(least_customers_filtered).mark_bar().encode(
-                        x=alt.X('Customer_Name:O', title='Customer Name',
-                                sort=least_customers_filtered['Order_Total_Price'].tolist()),
-                        # Customer_Name on X-axis
-                        y=alt.Y('Order_Total_Price:Q', title='Total Order Price (€)'),  # Order_Total_Price on Y-axis
-                        color=alt.Color('Order_Total_Price:Q', legend=None),  # Color bars by Order_Total_Price
-                        tooltip=['Customer_Name:N',
-                                 alt.Tooltip('Order_Total_Price:Q', title='Total Order Price (€)', format=".2f")]
-                    ).properties(width=350, height=300)
-                    # Add text on bars
-                    least_chart_text = least_chart.mark_text(
-                        align='center',
-                        baseline='middle',
-                        dy=-10,  # Adjust text position
-                        fontSize=12
-                    ).encode(
-                        text=alt.Text('Order_Total_Price:Q', format=".2f")
-                        # Add € symbol and format to 2 decimal places
-                    )
-                    least_chart = least_chart + least_chart_text
-                    least_chart = least_chart.configure_axis(
-                        labelAngle=0,
-                        labelFontSize=14,
-                        titleFontSize=16
-                    )
-                    st.altair_chart(least_chart, use_container_width=True)
-        else:
-            with chart_col1:
-                st.title("Highest valued orders")
-                st.markdown("""
-                    <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                        <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Highest Valued Orders.</h3>
-                    </div>
-                """, unsafe_allow_html=True)
-            with chart_col2:
-                st.title("Least valued orders")
-                st.markdown("""
-                    <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-                        <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Least Valued Orders.</h3>
-                    </div>
-                """, unsafe_allow_html=True)
+        # For Highest Valued Orders
+        with chart_col1:
+
+            add_tooltip_css()
+            tooltip_html = render_tooltip(
+                "This bar chart displays the top N customers by their total order price. Hover over each bar to view the customer name and the corresponding total order price in euros.")
+            st.markdown(
+                f"<h1 style='display: inline-block;'>Highest valued orders {tooltip_html}</h1>",
+                unsafe_allow_html=True
+            )
+            top_n = st.slider("Select Top N Customers to Display", min_value=1, max_value=50, value=5,
+                              key="top_n_largest")
+            top_customers_filtered = top_customers.nlargest(top_n, 'Order_Total_Price')
+            st.markdown("<h3 style='text-align: center;'>Top N Customers by Total Order Price</h3>",
+                        unsafe_allow_html=True)
+            # Create bar chart for Top N Customers
+            top_chart = alt.Chart(top_customers_filtered).mark_bar().encode(
+                x=alt.X('Customer_Name:O', title='Customer Name',
+                        sort=top_customers_filtered['Order_Total_Price'].tolist()),
+                # Customer_Name on X-axis
+                y=alt.Y('Order_Total_Price:Q', title='Total Order Price (€)'),  # Order_Total_Price on Y-axis
+                color=alt.Color('Order_Total_Price:Q', legend=None),  # Color bars by Order_Total_Price
+                tooltip=['Customer_Name:N',
+                         alt.Tooltip('Order_Total_Price:Q', title='Total Order Price (€)', format=".2f")]
+            ).properties(width=350, height=300)
+            # Add text on bars
+            top_chart_text = top_chart.mark_text(
+                align='center',
+                baseline='middle',
+                dy=-10,  # Adjust text position
+                fontSize=12
+            ).encode(
+                text=alt.Text('Order_Total_Price:Q', format=".2f")
+                # Add € symbol and format to 2 decimal places
+            )
+            top_chart = top_chart + top_chart_text
+            top_chart = top_chart.configure_axis(
+                labelAngle=0,
+                labelFontSize=14,
+                titleFontSize=16
+            )
+            st.altair_chart(top_chart, use_container_width=True)
+
+        # For Least Valued Orders
+        with chart_col2:
+
+            add_tooltip_css()
+            tooltip_html = render_tooltip(
+                "This bar chart displays the least N customers by their total order price. Hover over each bar to view the customer name and the corresponding total order price in euros.")
+            st.markdown(
+                f"<h1 style='display: inline-block;'>Least valued orders {tooltip_html}</h1>",
+                unsafe_allow_html=True
+            )
+            least_n = st.slider("Select Least N Customers to Display", min_value=1, max_value=50, value=5,
+                                key="top_n_smallest")
+            least_customers_filtered = least_customers.nsmallest(least_n, 'Order_Total_Price')
+            st.markdown("<h3 style='text-align: center;'>Least N Customers by Total Order Price</h3>",
+                        unsafe_allow_html=True)
+            least_chart = alt.Chart(least_customers_filtered).mark_bar().encode(
+                x=alt.X('Customer_Name:O', title='Customer Name',
+                        sort=least_customers_filtered['Order_Total_Price'].tolist()),
+                # Customer_Name on X-axis
+                y=alt.Y('Order_Total_Price:Q', title='Total Order Price (€)'),  # Order_Total_Price on Y-axis
+                color=alt.Color('Order_Total_Price:Q', legend=None),  # Color bars by Order_Total_Price
+                tooltip=['Customer_Name:N',
+                         alt.Tooltip('Order_Total_Price:Q', title='Total Order Price (€)', format=".2f")]
+            ).properties(width=350, height=300)
+            # Add text on bars
+            least_chart_text = least_chart.mark_text(
+                align='center',
+                baseline='middle',
+                dy=-10,  # Adjust text position
+                fontSize=12
+            ).encode(
+                text=alt.Text('Order_Total_Price:Q', format=".2f")
+                # Add € symbol and format to 2 decimal places
+            )
+            least_chart = least_chart + least_chart_text
+            least_chart = least_chart.configure_axis(
+                labelAngle=0,
+                labelFontSize=14,
+                titleFontSize=16
+            )
+            st.altair_chart(least_chart, use_container_width=True)
 
         # Todo-Total Order by Referring Site
         try:
