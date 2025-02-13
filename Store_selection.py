@@ -207,7 +207,20 @@ def filter_by_date(df, date_column, label_prefix=""):
 
 def show_customer_data_page():
     try:
-        st.title('Customer Data')
+        # st.title('Customer Data')
+        st.markdown(
+                """
+                <h1 style='text-align: left;
+                           font-size: 60px;
+                           font-family: Arial, sans-serif;
+                           background: linear-gradient(to left top, #e66465, #9198e5);
+                           -webkit-background-clip: text;
+                           -webkit-text-fill-color: transparent;'>
+                    Customer Data
+                </h1>
+                """,
+                unsafe_allow_html=True
+            )
         add_custom_css()
         # Todo- Card Creation for the above
         col1, col2, col3 = st.columns(3)
@@ -612,7 +625,21 @@ def show_customer_data_page():
 
 def show_cj_page():
     try:
-        st.title('Customer Journey Data')
+        # st.title('Customer Journey Data')
+        st.markdown(
+            """
+            <h1 style='text-align: left;
+                       font-size: 60px;
+                       font-family: Arial, sans-serif;
+                       background: linear-gradient(to left top, #e66465, #9198e5);
+                       -webkit-background-clip: text;
+                       -webkit-text-fill-color: transparent;'>
+                Customer Journey Data
+            </h1>
+            """,
+            unsafe_allow_html=True
+        )
+
         add_custom_css()
         # Todo-Customer Journey Data---------------------------
         if df_cj is not None and not df_cj.empty:
@@ -1899,7 +1926,20 @@ def show_cj_page():
 
 
 def show_order_data_page():
-    st.title('Order Data')
+    # st.title('Order Data')
+    st.markdown(
+    """
+    <h1 style='text-align: left;
+               font-size: 60px;
+               font-family: Arial, sans-serif;
+               background: linear-gradient(to left top, #e66465, #9198e5);
+               -webkit-background-clip: text;
+               -webkit-text-fill-color: transparent;'>
+        Order Data
+    </h1>
+    """,
+    unsafe_allow_html=True
+    )
     add_custom_css()
     try:
         # Todo- Card Creation for the above -----------------------------------
@@ -2559,7 +2599,20 @@ def show_order_data_page():
 
 
 def show_abandoned_checkouts_page():
-    st.title('Abandoned Checkouts')
+    # st.title('Abandoned Checkouts')
+    st.markdown(
+            """
+            <h1 style='text-align: left;
+                       font-size: 60px;
+                       font-family: Arial, sans-serif;
+                       background: linear-gradient(to left top, #e66465, #9198e5);
+                       -webkit-background-clip: text;
+                       -webkit-text-fill-color: transparent;'>
+                Abandoned Checkouts
+            </h1>
+            """,
+            unsafe_allow_html=True
+        )
     add_custom_css()
     try:
         # Todo- Card Creation for the above
@@ -2993,7 +3046,20 @@ def show_abandoned_checkouts_page():
 
 
 def show_products_page():
-    st.title('Products Data')
+    # st.title('Products Data')
+    st.markdown(
+    """
+    <h1 style='text-align: left;
+               font-size: 60px;
+               font-family: Arial, sans-serif;
+               background: linear-gradient(to left top, #e66465, #9198e5);
+               -webkit-background-clip: text;
+               -webkit-text-fill-color: transparent;'>
+        Products Data
+    </h1>
+    """,
+    unsafe_allow_html=True
+    )
     add_custom_css()
     try:
         # Todo-Average number of products ordered by a customer
@@ -3422,7 +3488,20 @@ def show_products_page():
 
 
 def show_revenue_page():
-    st.title('Revenue Data')
+    # st.title('Revenue Data')
+    st.markdown(
+            """
+            <h1 style='text-align: left;
+                       font-size: 60px;
+                       font-family: Arial, sans-serif;
+                       background: linear-gradient(to left top, #e66465, #9198e5);
+                       -webkit-background-clip: text;
+                       -webkit-text-fill-color: transparent;'>
+                Revenue Data
+            </h1>
+            """,
+            unsafe_allow_html=True
+    )
     add_custom_css()
     try:
         try:
