@@ -119,9 +119,18 @@ def load_data(file_path, encoding='utf-8', parse_dates=True):
     return df
 
 st.sidebar.markdown(
-        "<h1 style='text-align: center; color: #ADD8E6; font-size: 40px; font-family: Arial, sans-serif;'>QeApps</h1>",
-        unsafe_allow_html=True
-    )
+    """
+    <h1 style='text-align: center;
+               font-size: 40px;
+               font-family: Arial, sans-serif;
+               background: linear-gradient(to right, white, navy);
+               -webkit-background-clip: text;
+               -webkit-text-fill-color: transparent;'>
+        QeApps
+    </h1>
+    """,
+    unsafe_allow_html=True
+)
 
 def get_store_names(data_dir):
     files = os.listdir(data_dir)
