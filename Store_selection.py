@@ -51,7 +51,7 @@ def render_tooltip(info_text: str, icon: str = "ℹ️") -> str:
     """
 
 st.set_page_config(
-    page_title="Dashboard",
+    page_title="QeApps:Dashboard",
     page_icon="🔧",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -93,18 +93,6 @@ def add_custom_css():
         """,
         unsafe_allow_html=True
     )
-
-# def load_data(file_path):
-#     df = pd.read_csv(file_path, parse_dates=False)
-#     date_columns = ['Order_Created_At', 'Order_Updated_At', 'Event_Time', 'Customer_Created_At', 'Customer_Updated_At',
-#                     'Order_Created_At', 'Order_Updated_At', 'Variant_Created_At', 'Product_Created_At']
-#     for col in df.columns:
-#         if col in date_columns and df[col].dtype == 'object':
-#             try:
-#                 df[col] = pd.to_datetime(df[col], errors='coerce', utc=True)
-#             except Exception as e:
-#                 st.error(f"Error parsing column '{col}': {e}")
-#     return df
 
 def load_data(file_path, encoding='utf-8', parse_dates=True):
     try:
@@ -179,18 +167,6 @@ if store_select:
             df_products = None
     except:
         df_products = None
-# def filter_by_date(df, date_column, label_prefix=""):
-#     min_date = df[date_column].min().date()
-#     max_date = df[date_column].max().date()
-#     start_date = st.sidebar.date_input(f'{label_prefix}Start Date', min_value=min_date, max_value=max_date,value=min_date)
-#     end_date = st.sidebar.date_input(f'{label_prefix}End Date', min_value=min_date, max_value=max_date, value=max_date)
-#     if start_date and end_date:
-#         start_date = pd.to_datetime(start_date).tz_localize('UTC')
-#         end_date = pd.to_datetime(end_date).tz_localize('UTC')
-#         df[date_column] = pd.to_datetime(df[date_column])
-#         filtered_data = df[(df[date_column] >= start_date) & (df[date_column] <= end_date)]
-#         return filtered_data
-#     return df
 
 def filter_by_date(df, date_column, label_prefix=""):
     df[date_column] = pd.to_datetime(df[date_column], errors='coerce')
