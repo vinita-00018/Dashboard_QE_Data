@@ -8,6 +8,7 @@ import io
 import os
 import plotly.graph_objects as go
 
+
 def add_tooltip_css():
     st.markdown(f"""
         <style>
@@ -43,12 +44,14 @@ def add_tooltip_css():
         </style>
     """, unsafe_allow_html=True)
 
+
 def render_tooltip(info_text: str, icon: str = "ℹ️") -> str:
     return f"""
     <div class="tooltip">{icon}
       <span class="tooltiptext">{info_text}</span>
     </div>
     """
+
 
 st.set_page_config(
     page_title="QeApps:Dashboard",
@@ -67,6 +70,7 @@ st.markdown(
     </style>
     """, unsafe_allow_html=True
 )
+
 
 def add_custom_css():
     st.markdown(
@@ -94,6 +98,7 @@ def add_custom_css():
         unsafe_allow_html=True
     )
 
+
 def load_data(file_path, encoding='utf-8', parse_dates=True):
     try:
         df = pd.read_csv(file_path, encoding=encoding, parse_dates=False)
@@ -102,7 +107,8 @@ def load_data(file_path, encoding='utf-8', parse_dates=True):
         return None
 
     if parse_dates:
-        date_columns = ['Order_Created_At', 'Order_Updated_At', 'Event_Time', 'Customer_Created_At','Customer_Updated_At',
+        date_columns = ['Order_Created_At', 'Order_Updated_At', 'Event_Time', 'Customer_Created_At',
+                        'Customer_Updated_At',
                         'Order_Created_At', 'Order_Updated_At', 'Variant_Created_At', 'Product_Created_At']
         for col in df.columns:
             if col in date_columns and df[col].dtype == 'object':
@@ -112,6 +118,7 @@ def load_data(file_path, encoding='utf-8', parse_dates=True):
                     st.error(f"Error parsing column '{col}': {e}")
     return df
 
+
 def get_store_names(data_dir):
     files = os.listdir(data_dir)
     store_names = set()  # Using set to avoid duplicates
@@ -119,6 +126,7 @@ def get_store_names(data_dir):
         store_name = file.split('_')[0]
         store_names.add(store_name)
     return list(store_names)
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(BASE_DIR, "data")
@@ -168,11 +176,13 @@ if store_select:
     except:
         df_products = None
 
+
 def filter_by_date(df, date_column, label_prefix=""):
     df[date_column] = pd.to_datetime(df[date_column], errors='coerce')
     min_date = df[date_column].min().date()
     max_date = df[date_column].max().date()
-    start_date = st.sidebar.date_input(f'{label_prefix}Start Date', min_value=min_date, max_value=max_date,value=min_date)
+    start_date = st.sidebar.date_input(f'{label_prefix}Start Date', min_value=min_date, max_value=max_date,
+                                       value=min_date)
     end_date = st.sidebar.date_input(f'{label_prefix}End Date', min_value=min_date, max_value=max_date, value=max_date)
     if start_date and end_date:
         start_date = pd.to_datetime(start_date).tz_localize('UTC')
@@ -180,6 +190,7 @@ def filter_by_date(df, date_column, label_prefix=""):
         filtered_data = df[(df[date_column] >= start_date) & (df[date_column] <= end_date)]
         return filtered_data
     return df
+
 
 def show_customer_data_page():
     try:
@@ -190,7 +201,8 @@ def show_customer_data_page():
         if df_customers is not None and not df_customers.empty:
             with col1:
                 if df_customers is None or df_customers.empty:
-                    st.markdown("<h1 style='color: blue; text-align: center;'>Listed Customers Data Unavailable</h1>",unsafe_allow_html=True)
+                    st.markdown("<h1 style='color: blue; text-align: center;'>Listed Customers Data Unavailable</h1>",
+                                unsafe_allow_html=True)
                     st.markdown("""
                         <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
                             <h3 style="font-size: 30px; color: white; font-weight: bold;">No data available for listed customers.</h3>
@@ -300,7 +312,8 @@ def show_customer_data_page():
         if df_customers is not None and not df_customers.empty:
             add_tooltip_css()
             tooltip_html = render_tooltip("Preview of customer data filtered by the selected date range.")
-            st.markdown(f"<h1 style='display: inline-block;'>Preview Filtered Customer Data {tooltip_html}</h1>",unsafe_allow_html=True)
+            st.markdown(f"<h1 style='display: inline-block;'>Preview Filtered Customer Data {tooltip_html}</h1>",
+                        unsafe_allow_html=True)
             st.subheader("Customer Data")
             filtered_customers = filter_by_date(df_customers, 'Customer_Created_At')
             st.dataframe(filtered_customers, use_container_width=True)
@@ -310,12 +323,12 @@ def show_customer_data_page():
                             <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
                             <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Preview of customer data filtered by the selected date range.</h3>
                             </div>
-                            
+
                             """, unsafe_allow_html=True)
 
         # Todo- Customer Name Top 5 and Least 5 with Price Spends----------------------------------------
         chart_col1, chart_col2 = st.columns(2)
-        if  df_orders is not None and not df_orders.empty:
+        if df_orders is not None and not df_orders.empty:
             order_df = df_orders.drop_duplicates("Order_ID")
             order_data = order_df.groupby('Customer_Name')['Order_Total_Price'].sum().reset_index()
             order_data = order_data.dropna(subset=['Customer_Name'])
@@ -342,10 +355,12 @@ def show_customer_data_page():
                     top_n = st.slider("Select Top N Customers to Display", min_value=1, max_value=50, value=5)
 
                     top_5_customers_filtered = top_5_customers.nlargest(top_n, 'Order_Total_Price')
-                    st.markdown("<h3 style='text-align: center;'>Top N Customers by Total Order Price</h3>",unsafe_allow_html=True)
+                    st.markdown("<h3 style='text-align: center;'>Top N Customers by Total Order Price</h3>",
+                                unsafe_allow_html=True)
 
                     chart = alt.Chart(top_5_customers_filtered).mark_bar().encode(
-                        x=alt.X('Customer_Name:O', title='Customer Name',sort=top_5_customers_filtered['Order_Total_Price'].tolist()),
+                        x=alt.X('Customer_Name:O', title='Customer Name',
+                                sort=top_5_customers_filtered['Order_Total_Price'].tolist()),
                         y=alt.Y('Order_Total_Price:Q', title='Total Order Price (€)'),
                         color=alt.Color('Order_Total_Price:Q', legend=None),
                         tooltip=['Customer_Name:N', 'Order_Total_Price:Q']
@@ -451,7 +466,8 @@ def show_customer_data_page():
             customer_summary1 = customer_summary1.reset_index(drop=True)
             if not customer_summary1.empty:
                 add_tooltip_css()
-                tooltip_html = render_tooltip("This table summarizes customer data, including the total number of unique orders placed and the total spending for each customer. Only customers with at least two orders are included in this filtered view. Expand the section to preview the detailed data.")
+                tooltip_html = render_tooltip(
+                    "This table summarizes customer data, including the total number of unique orders placed and the total spending for each customer. Only customers with at least two orders are included in this filtered view. Expand the section to preview the detailed data.")
                 st.markdown(f"<h1 style='display: inline-block;'>Customer Order Summary{tooltip_html}</h1>",
                             unsafe_allow_html=True)
                 st.subheader("Summary Table")
@@ -482,8 +498,10 @@ def show_customer_data_page():
             country_data = country_data.rename(columns={"Customer_ID": "Unique_Customers"})
             with chart_col1:
                 add_tooltip_css()
-                tooltip_html = render_tooltip("This chart visualizes the number of unique customers segmented by their provinces. The bars represent the total count of unique customers for each province, with exact numbers displayed above the bars. Hover over the bars to view the province name and corresponding unique customer count.")
-                st.markdown(f"<h1 style='display: inline-block;'>Customer Province{tooltip_html}</h1>",unsafe_allow_html=True)
+                tooltip_html = render_tooltip(
+                    "This chart visualizes the number of unique customers segmented by their provinces. The bars represent the total count of unique customers for each province, with exact numbers displayed above the bars. Hover over the bars to view the province name and corresponding unique customer count.")
+                st.markdown(f"<h1 style='display: inline-block;'>Customer Province{tooltip_html}</h1>",
+                            unsafe_allow_html=True)
                 st.markdown("<h3 style='text-align: center;'>Unique Customers by Province</h3>", unsafe_allow_html=True)
                 # Check if province data is not empty
                 if df_customers is not None and not df_customers.empty and not province_data.empty:
@@ -578,202 +596,116 @@ def show_customer_data_page():
             "<h3 style='font-size: 30px; color: red; text-align: center;'><b>Dataset is currently unavailable.</b></h3>",
             unsafe_allow_html=True)
 
+
 def show_cj_page():
     try:
         st.title('Customer Journey Data')
         add_custom_css()
-        # Todo-Customer Journey Diagram:
-
-        # if df_cj is not None and not df_cj.empty:
-        #     add_tooltip_css()
-        #     tooltip_html = render_tooltip(f"Customer Journey from start to end on page")
-        #     st.markdown(f"<h1 style='display: inline-block;'>Customer Journey {tooltip_html}</h1>",unsafe_allow_html=True)
-        #     df_filtered = df_cj[['Event', 'Customer_IP']]
-        #     # Remove rows where Event is NaN
-        #     df_filtered = df_filtered.dropna(subset=['Event'])
-        #     # Remove duplicates to get unique customer events
-        #     df_filtered = df_filtered.drop_duplicates(subset=['Customer_IP', 'Event'])
-        #     # Create a list of events in order
-        #     event_order = ['Home', 'Collection', 'Search', 'Product', 'Cart', 'Cart Add','Cart Update','Cart Remove']  # Adjust based on actual events
-        #     # Sort the events by their order
-        #     df_filtered['Event'] = pd.Categorical(df_filtered['Event'], categories=event_order, ordered=True)
-        #
-        #     df_filtered = df_filtered.sort_values(by=['Customer_IP', 'Event'])
-        #     # Create a list to track the transition of customers
-        #     transitions = []
-        #     # Track how many customers are at each event
-        #     event_counts = df_filtered['Event'].value_counts().to_dict()
-        #     for customer in df_filtered['Customer_IP'].unique():
-        #         customer_events = df_filtered[df_filtered['Customer_IP'] == customer]['Event'].tolist()
-        #         for i in range(1, len(customer_events)):
-        #             transitions.append((customer_events[i - 1], customer_events[i]))
-        #     # Count the number of customers transitioning between events
-        #     transition_counts = pd.Series(transitions).value_counts()
-        #     # Prepare the nodes and links for the Sankey diagram
-        #     unique_events = list(event_order)
-        #     node_mapping = {event: index for index, event in enumerate(unique_events)}
-        #     # Create nodes (Event Types)
-        #     nodes = unique_events
-        #     # Create links (Transitions)
-        #     links = []
-        #     drop_offs = {}  # Dictionary to store drop-off counts
-        #     for (from_event, to_event), count in transition_counts.items():
-        #         # Check if the events are valid before creating links
-        #         if from_event in node_mapping and to_event in node_mapping:
-        #             links.append({
-        #                 'source': node_mapping[from_event],
-        #                 'target': node_mapping[to_event],
-        #                 'value': count
-        #             })
-        #             total_at_event = event_counts.get(from_event, 0)
-        #             total_transitions = sum(link['value'] for link in links if nodes[link['source']] == from_event)
-        #             drop_off_count = total_at_event - total_transitions
-        #             drop_offs[(from_event, to_event)] = drop_off_count
-        #     link_labels = []
-        #     for (from_event, to_event), count in transition_counts.items():
-        #         drop_off_count = drop_offs.get((from_event, to_event), 0)
-        #         link_labels.append(f"Drop-off: {drop_off_count}")
-        #     sankey_figure = go.Figure(go.Sankey(
-        #         node=dict(
-        #             pad=20,
-        #             thickness=20,
-        #             line=dict(color="black", width=0.5),
-        #             label=nodes,
-        #             color=["#ff9259", "#66b3ff", "#99ff99", "#ffcc99", "#ff9789", "#66b2ff", "#99ff19", "#ffcc69"]
-        #         ),
-        #         link=dict(
-        #             source=[link['source'] for link in links],
-        #             target=[link['target'] for link in links],
-        #             value=[link['value'] for link in links],
-        #             # color=["rgba(255, 0, 0, 0.4)" for _ in links],  # Link color can be adjusted here
-        #             color=["rgba(30, 144, 255, 0.4)" for _ in links],  # Link color can be adjusted here
-        #             # color=["rgba(220, 20, 60, 0.4)" for _ in links],  # Link color can be adjusted here
-        #             label=link_labels  # Add the link labels with drop-off count
-        #         )
-        #     ))
-        #     st.plotly_chart(sankey_figure, use_container_width=True)
-        # else:
-        #     st.title("Customer Journey From start to end")
-        #     st.markdown("""
-        #                     <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
-        #                         <h3 style="font-size: 30px; color: white; font-weight: bold;">No Customer Journey Data Available</h3>
-        #                     </div>
-        #                     """, unsafe_allow_html=True)
-
-        #Todo-Customer Journey Data---------------------------
+        # Todo-Customer Journey Data---------------------------
         if df_cj is not None and not df_cj.empty:
+            filtered_df = (
+                df_cj[['Event_Time', 'Event', 'Customer_IP']]
+                .dropna(subset=['Event', 'Customer_IP'])
+                .drop_duplicates(subset=['Customer_IP', 'Event'])  # Remove duplicate events per session
+            )
+            filtered_df = filtered_df.sort_values(by=['Customer_IP', 'Event_Time'])
+
+            def convert_seconds(seconds):
+                if seconds < 60:
+                    return "< 1 min"
+                hours = int(seconds // 3600)
+                minutes = int((seconds % 3600) // 60)
+                return f"{hours} hr {minutes} min" if hours > 0 else f"{minutes} min"
+
+            filtered_df['Time_Spent'] = (
+                filtered_df.groupby(['Customer_IP'])['Event_Time']
+                .diff()
+                .dt.total_seconds()
+            )
+
+            filtered_df['Time_Spent'] = filtered_df['Time_Spent'].fillna(0)
+            filtered_df['Total_Time_Spent'] = filtered_df['Time_Spent'].apply(
+                convert_seconds)  # Updated Column Name
+            ip_time_spent = filtered_df.groupby('Customer_IP')['Time_Spent'].sum().reset_index()
+            ip_time_spent = ip_time_spent.sort_values(by='Time_Spent', ascending=False)
+            filtered_df['Customer_IP'] = pd.Categorical(filtered_df['Customer_IP'],
+                                                        categories=ip_time_spent['Customer_IP'], ordered=True)
+            filtered_df = filtered_df.sort_values(by=['Customer_IP', 'Time_Spent'], ascending=[True, False])
+
+            # Display Sankey Diagram after dataframe
             with st.container():
-                add_tooltip_css()
-                tooltip_html = render_tooltip(f"Select Date Range from start to end")
-                st.markdown(f"<h1 style='display: inline-block;'>Select Date Range {tooltip_html}</h1>",unsafe_allow_html=True)
-                col1, col2 = st.columns(2)
-                with col1:
-                    start_date = st.date_input("Start Date", df_cj['Event_Time'].min().date())
-                with col2:
-                    end_date = st.date_input("End Date", df_cj['Event_Time'].max().date())
+                df_cj['Session_ID'] = df_cj.groupby(['Customer_IP', 'session']).ngroup() + 1
+                df_filtered = df_cj[['Event', 'Session_ID']].dropna(subset=['Event'])
+                df_filtered = df_filtered.drop_duplicates(subset=['Session_ID', 'Event'])
 
-            start_date = pd.Timestamp(start_date).tz_localize('UTC')
-            end_date = pd.Timestamp(end_date).tz_localize('UTC')
-            filtered_df = df_cj[(df_cj['Event_Time'] >= start_date) & (df_cj['Event_Time'] <= end_date)]
+                event_order = ['Home', 'Collection', 'Search', 'Product', 'Cart', 'Cart Add', 'Cart Remove',
+                               'Cart Update']
+                df_filtered['Event'] = pd.Categorical(df_filtered['Event'], categories=event_order, ordered=True)
+                df_filtered = df_filtered.sort_values(by=['Session_ID', 'Event'])
 
-            if filtered_df.empty:
-                st.warning(f"No data available for the selected date range: {start_date} to {end_date}")
-            else:
-                filtered_df = (
-                    filtered_df[['Event_Time', 'Event', 'Customer_IP']]
-                    .dropna(subset=['Event', 'Customer_IP'])
-                    .drop_duplicates(subset=['Customer_IP', 'Event'])  # Remove duplicate events per session
-                )
-                filtered_df = filtered_df.sort_values(by=['Customer_IP', 'Event_Time'])
+                transitions = []
+                for session, group in df_filtered.groupby('Session_ID'):
+                    events = group['Event'].tolist()
+                    levels = [f"{event}_{i}" for i, event in enumerate(events)]
 
-                def convert_seconds(seconds):
-                    if seconds < 60:
-                        return "< 1 min"
-                    hours = int(seconds // 3600)
-                    minutes = int((seconds % 3600) // 60)
-                    return f"{hours} hr {minutes} min" if hours > 0 else f"{minutes} min"
+                    for i in range(len(levels)):
+                        if i < len(levels) - 1:
+                            transitions.append((levels[i], levels[i + 1]))
 
-                filtered_df['Time_Spent'] = (
-                    filtered_df.groupby(['Customer_IP'])['Event_Time']
-                    .diff()
-                    .dt.total_seconds()
-                )
+                        drop_off = f"Drop-off_{i}"
+                        transitions.append((levels[i], drop_off))
 
-                filtered_df['Time_Spent'] = filtered_df['Time_Spent'].fillna(0)
-                filtered_df['Total_Time_Spent'] = filtered_df['Time_Spent'].apply(
-                    convert_seconds)  # Updated Column Name
-                ip_time_spent = filtered_df.groupby('Customer_IP')['Time_Spent'].sum().reset_index()
-                ip_time_spent = ip_time_spent.sort_values(by='Time_Spent', ascending=False)
-                filtered_df['Customer_IP'] = pd.Categorical(filtered_df['Customer_IP'],
-                                                            categories=ip_time_spent['Customer_IP'], ordered=True)
-                filtered_df = filtered_df.sort_values(by=['Customer_IP', 'Time_Spent'], ascending=[True, False])
+                drop_off_nodes = [f"Drop-off_{i}" for i in range(len(event_order))]
 
-                # Display Sankey Diagram after dataframe
-                with st.container():
-                    df_cj['Session_ID'] = df_cj.groupby(['Customer_IP', 'session']).ngroup() + 1
-                    df_filtered = df_cj[['Event', 'Session_ID']].dropna(subset=['Event'])
-                    df_filtered = df_filtered.drop_duplicates(subset=['Session_ID', 'Event'])
+                transition_counts = pd.DataFrame(transitions, columns=['Source', 'Target'])
+                transition_counts = transition_counts.groupby(['Source', 'Target']).size().reset_index(name='Count')
 
-                    event_order = ['Home', 'Collection', 'Search', 'Product', 'Cart', 'Cart Add', 'Cart Remove',
-                                   'Cart Update']
-                    df_filtered['Event'] = pd.Categorical(df_filtered['Event'], categories=event_order, ordered=True)
-                    df_filtered = df_filtered.sort_values(by=['Session_ID', 'Event'])
+                unique_events = list(set(transition_counts['Source']).union(set(transition_counts['Target'])))
+                node_indices = {event: i for i, event in enumerate(unique_events)}
 
-                    transitions = []
-                    for session, group in df_filtered.groupby('Session_ID'):
-                        events = group['Event'].tolist()
-                        levels = [f"{event}_{i}" for i, event in enumerate(events)]
+                source = [node_indices[src] for src in transition_counts['Source']]
+                target = [node_indices[tgt] for tgt in transition_counts['Target']]
+                value = transition_counts['Count'].tolist()
 
-                        for i in range(len(levels)):
-                            if i < len(levels) - 1:
-                                transitions.append((levels[i], levels[i + 1]))
+                sankey_figure = go.Figure(go.Sankey(
+                    node=dict(
+                        pad=20,
+                        thickness=20,
+                        line=dict(color="black", width=0.5),
+                        label=unique_events,
+                        color=["#ff9259", "#66b3ff", "#99ff99", "#ffcc99"] * (len(unique_events) // 4 + 1)
+                    ),
+                    link=dict(
+                        source=source,
+                        target=target,
+                        value=value,
+                        color=["rgba(30, 144, 255, 0.4)" for _ in value]
+                    )
+                ))
 
-                            drop_off = f"Drop-off_{i}"
-                            transitions.append((levels[i], drop_off))
-
-                    drop_off_nodes = [f"Drop-off_{i}" for i in range(len(event_order))]
-
-                    transition_counts = pd.DataFrame(transitions, columns=['Source', 'Target'])
-                    transition_counts = transition_counts.groupby(['Source', 'Target']).size().reset_index(name='Count')
-
-                    unique_events = list(set(transition_counts['Source']).union(set(transition_counts['Target'])))
-                    node_indices = {event: i for i, event in enumerate(unique_events)}
-
-                    source = [node_indices[src] for src in transition_counts['Source']]
-                    target = [node_indices[tgt] for tgt in transition_counts['Target']]
-                    value = transition_counts['Count'].tolist()
-
-                    sankey_figure = go.Figure(go.Sankey(
-                        node=dict(
-                            pad=20,
-                            thickness=20,
-                            line=dict(color="black", width=0.5),
-                            label=unique_events,
-                            color=["#ff9259", "#66b3ff", "#99ff99", "#ffcc99"] * (len(unique_events) // 4 + 1)
-                        ),
-                        link=dict(
-                            source=source,
-                            target=target,
-                            value=value,
-                            color=["rgba(30, 144, 255, 0.4)" for _ in value]
-                        )
-                    ))
-
-                    add_tooltip_css()
-                    tooltip_html = render_tooltip(f"Customer Journey flow from start to end you can see incoming and outgoing data and drop off data of each level")
-                    st.markdown(f"<h1 style='display: inline-block;'>Customer Journey Flow {tooltip_html}</h1>", unsafe_allow_html=True)
-                    st.plotly_chart(sankey_figure, use_container_width=True)
-
-                # st.write("### Customer IP-wise Time Spent on Each Page")
                 add_tooltip_css()
                 tooltip_html = render_tooltip(
-                    f"Customer IP-wise Time Spent on Each Page")
-                st.markdown(f"<h1 style='display: inline-block;'>Customer IP-wise Time Spent on Each Page {tooltip_html}</h1>",
+                    f"Customer Journey flow from start to end you can see incoming and outgoing data and drop off data of each level")
+                st.markdown(f"<h1 style='display: inline-block;'>Customer Journey Flow {tooltip_html}</h1>",
                             unsafe_allow_html=True)
-                with st.expander("View Full Table", expanded=True):
-                    st.dataframe(filtered_df[['Customer_IP', 'Event', 'Total_Time_Spent']], use_container_width=True)
+                st.plotly_chart(sankey_figure, use_container_width=True)
 
-
+            # st.write("### Customer IP-wise Time Spent on Each Page")
+            add_tooltip_css()
+            tooltip_html = render_tooltip(
+                f"Customer IP-wise Time Spent on Each Page")
+            st.markdown(
+                f"<h1 style='display: inline-block;'>Customer IP-wise Time Spent on Each Page {tooltip_html}</h1>",
+                unsafe_allow_html=True)
+            with st.expander("View Full Table", expanded=True):
+                st.dataframe(filtered_df[['Customer_IP', 'Event', 'Total_Time_Spent']], use_container_width=True)
+        else:
+            st.title("Customer Journey Flow")
+            st.markdown("""
+                            <div style="border: 2px solid black; padding: 20px; background-color: #454545; border-radius: 10px; text-align: center;">
+                                <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data for Customer Journey Flow</h3>
+                            </div>
+                            """, unsafe_allow_html=True)
         # Todo- Card Creation for the above
         col1, col2, col3 = st.columns(3)
         if df_cj is not None and not df_cj.empty:
@@ -854,8 +786,9 @@ def show_cj_page():
         if df_cj is not None and not df_cj.empty:
             add_tooltip_css()
             tooltip_html = render_tooltip("Preview of customer journey data filtered by the selected date range.")
-            st.markdown(f"<h1 style='display: inline-block;'>Preview Filtered Customer Journey Data {tooltip_html}</h1>",
-                        unsafe_allow_html=True)
+            st.markdown(
+                f"<h1 style='display: inline-block;'>Preview Filtered Customer Journey Data {tooltip_html}</h1>",
+                unsafe_allow_html=True)
             st.subheader("Customer Journey Data")
             filtered_cj = filter_by_date(df_cj, 'Event_Time')
             # with st.expander("Preview Filtered CJ Data"):
@@ -877,9 +810,12 @@ def show_cj_page():
                 df_temp = df_temp.dropna(subset=["Event_Time"])
                 with col1:
                     add_tooltip_css()
-                    tooltip_html = render_tooltip("This chart compares the total number of sessions on weekdays and weekends based on event timestamps. The data is grouped by unique customer sessions.")
-                    st.markdown(f"<h1 style='display: inline-block;'>Session :Weekday,Weekend {tooltip_html}</h1>",unsafe_allow_html=True)
-                    df_temp["Weekday_Weekend"] = df_temp["Event_Time"].dt.dayofweek.apply(lambda x: "Weekend" if x >= 5 else "Weekday")
+                    tooltip_html = render_tooltip(
+                        "This chart compares the total number of sessions on weekdays and weekends based on event timestamps. The data is grouped by unique customer sessions.")
+                    st.markdown(f"<h1 style='display: inline-block;'>Session :Weekday,Weekend {tooltip_html}</h1>",
+                                unsafe_allow_html=True)
+                    df_temp["Weekday_Weekend"] = df_temp["Event_Time"].dt.dayofweek.apply(
+                        lambda x: "Weekend" if x >= 5 else "Weekday")
                     grouped_filtered_df = df_temp.groupby(["Customer_IP", "session"]).first().reset_index()
                     weekday_count = grouped_filtered_df[grouped_filtered_df["Weekday_Weekend"] == "Weekday"].shape[0]
                     weekend_count = grouped_filtered_df[grouped_filtered_df["Weekday_Weekend"] == "Weekend"].shape[0]
@@ -916,7 +852,9 @@ def show_cj_page():
                     })
                     pie_chart = alt.Chart(pie_data).mark_arc(size=200).encode(
                         theta="Count:Q",
-                        color=alt.Color("Day:N",sort=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday","Sunday"]),
+                        color=alt.Color("Day:N",
+                                        sort=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+                                              "Sunday"]),
                         tooltip=["Day:N", "Count:Q"]
                     ).properties(width=300, height=300)
 
@@ -1151,6 +1089,7 @@ def show_cj_page():
                 hours = int(seconds // 3600)
                 minutes = int((seconds % 3600) // 60)
                 return f"{hours} hr {minutes} mini"
+
             df_cj['Event_Time'] = pd.to_datetime(df_cj['Event_Time'])
             groupby_session = df_cj.groupby(['session', 'Customer_IP']).agg(
                 Time_On_Page=('Time_On_Page', 'sum')
@@ -1696,12 +1635,17 @@ def show_cj_page():
                 # time_spent_per_product = df_cj.groupby(['Product_ID', 'Product_Name'])['Time_On_Page'].sum().reset_index()
                 # if not df_cj.empty and 'Product_ID' in df_cj.columns and 'Time_On_Page' in df_cj.columns and not time_spent_per_product.empty:
                 if not df_cj.empty and 'Product_ID' in df_cj.columns and 'Time_On_Page' in df_cj.columns:
-                    df_cj['Product_ID'] = df_cj['Product_ID'].fillna('Unknown').astype(str).replace(".0", "", regex=True)
-                    time_spent_per_product = df_cj.groupby(['Product_ID', 'Product_Name'])['Time_On_Page'].sum().reset_index()
-                    time_spent_per_product_sorted = time_spent_per_product.sort_values(by='Time_On_Page',ascending=False)
-                    time_spent_per_product_sorted['Time_On_Page'] = time_spent_per_product_sorted['Time_On_Page'].apply(convert_seconds)
+                    df_cj['Product_ID'] = df_cj['Product_ID'].fillna('Unknown').astype(str).replace(".0", "",
+                                                                                                    regex=True)
+                    time_spent_per_product = df_cj.groupby(['Product_ID', 'Product_Name'])[
+                        'Time_On_Page'].sum().reset_index()
+                    time_spent_per_product_sorted = time_spent_per_product.sort_values(by='Time_On_Page',
+                                                                                       ascending=False)
+                    time_spent_per_product_sorted['Time_On_Page'] = time_spent_per_product_sorted['Time_On_Page'].apply(
+                        convert_seconds)
                     add_tooltip_css()
-                    tooltip_html = render_tooltip("This table displays the total time spent on each product. The data is grouped by Product ID and Name, and the total time spent is calculated for each product. The table is sorted in descending order, showing the products that have the highest total time spent on top. Hover over the rows to see the time spent on each product, displayed in a human-readable format.")
+                    tooltip_html = render_tooltip(
+                        "This table displays the total time spent on each product. The data is grouped by Product ID and Name, and the total time spent is calculated for each product. The table is sorted in descending order, showing the products that have the highest total time spent on top. Hover over the rows to see the time spent on each product, displayed in a human-readable format.")
                     st.markdown(
                         f"<h1 style='display: inline-block;'>Summary of Total Time Spent Per Product {tooltip_html}</h1>",
                         unsafe_allow_html=True)
@@ -1722,10 +1666,13 @@ def show_cj_page():
                 # if not df_cj.empty and 'Collection_Name' in df_cj.columns and 'Time_On_Page' in df_cj.columns and not time_spent_per_product_sorted.empty:
                 if not df_cj.empty and 'Collection_Name' in df_cj.columns and 'Time_On_Page' in df_cj.columns:
                     time_spent_per_product = df_cj.groupby(['Collection_Name'])['Time_On_Page'].sum().reset_index()
-                    time_spent_per_product_sorted = time_spent_per_product.sort_values(by='Time_On_Page',ascending=False)
-                    time_spent_per_product_sorted['Time_On_Page'] = time_spent_per_product_sorted['Time_On_Page'].apply(convert_seconds)
+                    time_spent_per_product_sorted = time_spent_per_product.sort_values(by='Time_On_Page',
+                                                                                       ascending=False)
+                    time_spent_per_product_sorted['Time_On_Page'] = time_spent_per_product_sorted['Time_On_Page'].apply(
+                        convert_seconds)
                     add_tooltip_css()
-                    tooltip_html = render_tooltip("This table displays the total time spent on each collection. The data is grouped by Collection Name, and the total time spent is calculated for each collection. The table is sorted in descending order, highlighting the collections with the most time spent. Hover over the rows to see the total time spent on each collection, displayed in a human-readable format.")
+                    tooltip_html = render_tooltip(
+                        "This table displays the total time spent on each collection. The data is grouped by Collection Name, and the total time spent is calculated for each collection. The table is sorted in descending order, highlighting the collections with the most time spent. Hover over the rows to see the total time spent on each collection, displayed in a human-readable format.")
                     st.markdown(
                         f"<h1 style='display: inline-block;'>Summary of Total Time Spent Per Collections {tooltip_html}</h1>",
                         unsafe_allow_html=True)
@@ -1873,7 +1820,7 @@ def show_cj_page():
                 total_events_event_count = df_cj[df_cj['Event'] == event]['Customer_IP'].nunique()
                 bounce_events_event_count = bounce_df[bounce_df['Event'] == event]['Customer_IP'].nunique()
                 bounce_rate_percentage = (
-                                                     bounce_events_event_count / total_events_event_count) * 100 if total_events_event_count > 0 else 0
+                                                 bounce_events_event_count / total_events_event_count) * 100 if total_events_event_count > 0 else 0
                 bounce_rate_by_event[event] = bounce_rate_percentage
             # Convert bounce rates dictionary to DataFrame
             bounce_rate_df = pd.DataFrame(list(bounce_rate_by_event.items()), columns=['Event', 'Bounce Rate'])
@@ -1937,6 +1884,7 @@ def show_cj_page():
             "<h3 style='font-size: 30px; color: red; text-align: center;'><b>Dataset is currently unavailable.</b></h3>",
             unsafe_allow_html=True)
 
+
 def show_order_data_page():
     st.title('Order Data')
     add_custom_css()
@@ -1982,12 +1930,14 @@ def show_order_data_page():
 
         # Todo----Total orders placed: Weekday vs Weekend
         try:
-            col1,col2=st.columns(2)
+            col1, col2 = st.columns(2)
             if df_orders is not None and not df_orders.empty:
 
                 df_orders_ = df_orders.groupby('Order_ID').agg({'Order_Created_At': 'first'})
-                df_orders_['Order_Created_At'] = pd.to_datetime(df_orders_['Order_Created_At'], errors='coerce',utc=True)
-                df_orders_['Weekday_Weekend'] = df_orders_['Order_Created_At'].dt.dayofweek.apply(lambda x: 'Weekend' if x >= 5 else 'Weekday')
+                df_orders_['Order_Created_At'] = pd.to_datetime(df_orders_['Order_Created_At'], errors='coerce',
+                                                                utc=True)
+                df_orders_['Weekday_Weekend'] = df_orders_['Order_Created_At'].dt.dayofweek.apply(
+                    lambda x: 'Weekend' if x >= 5 else 'Weekday')
                 weekday_count = df_orders_[df_orders_['Weekday_Weekend'] == 'Weekday'].shape[0]
                 weekend_count = df_orders_[df_orders_['Weekday_Weekend'] == 'Weekend'].shape[0]
                 counts = [weekday_count, weekend_count]
@@ -2015,9 +1965,9 @@ def show_order_data_page():
                         unsafe_allow_html=True)
                     st.altair_chart(pie_chart, use_container_width=True)
 
-
                 df_orders_ = df_orders.groupby('Order_ID').agg({'Order_Created_At': 'first'}).reset_index()
-                df_orders_['Order_Created_At'] = pd.to_datetime(df_orders_['Order_Created_At'], errors='coerce',utc=True)
+                df_orders_['Order_Created_At'] = pd.to_datetime(df_orders_['Order_Created_At'], errors='coerce',
+                                                                utc=True)
                 # col1 = st.columns(1)[0]
                 with col2:
 
@@ -2076,7 +2026,6 @@ def show_order_data_page():
                                    <h3 style="font-size: 30px; color: white; font-weight: bold;">No data available for the Days of the Week analysis.</h3>
                                </div>
                            """, unsafe_allow_html=True)
-
 
         # Todo-Total Orders Placed: Hours of the Day-----------------------
         if df_orders is not None and not df_orders.empty:
@@ -2531,13 +2480,16 @@ def show_order_data_page():
         try:
             if df_orders is not None and not df_orders.empty:
                 df_unique_orders = df_orders.drop_duplicates(subset="Order_ID", keep="first")
-                total_orders_by_site = df_unique_orders.groupby("Order_Referring_Site")["Order_ID"].count().reset_index()
+                total_orders_by_site = df_unique_orders.groupby("Order_Referring_Site")[
+                    "Order_ID"].count().reset_index()
                 total_orders_by_site.columns = ["Referring Site", "Total Orders"]
                 if not total_orders_by_site.empty:
                     add_tooltip_css()
-                    tooltip_html = render_tooltip("This bar chart displays the top N referring sites by total number of orders. Hover over each bar to see the referring site and the corresponding number of orders.")
-                    st.markdown(f"<h1 style='display: inline-block;'>Total Orders by Referring Sites {tooltip_html}</h1>",
-                                unsafe_allow_html=True)
+                    tooltip_html = render_tooltip(
+                        "This bar chart displays the top N referring sites by total number of orders. Hover over each bar to see the referring site and the corresponding number of orders.")
+                    st.markdown(
+                        f"<h1 style='display: inline-block;'>Total Orders by Referring Sites {tooltip_html}</h1>",
+                        unsafe_allow_html=True)
                     st.markdown("### Visualizing the count of total orders grouped by referring sites")
                     top_n = st.slider("Select Top N Referring Sites to Display", min_value=1,
                                       max_value=len(total_orders_by_site), value=5)
@@ -2591,6 +2543,7 @@ def show_order_data_page():
         st.markdown(
             f"<h3 style='font-size: 30px; color: red; text-align: center;'><b>Dataset Currently unavaialbe</b></h3>",
             unsafe_allow_html=True)
+
 
 def show_abandoned_checkouts_page():
     st.title('Abandoned Checkouts')
@@ -3025,6 +2978,7 @@ def show_abandoned_checkouts_page():
             f"<h3 style='font-size: 30px; color: red; text-align: center;'><b>Dataset Currently unavaialbe</b></h3>",
             unsafe_allow_html=True)
 
+
 def show_products_page():
     st.title('Products Data')
     add_custom_css()
@@ -3117,7 +3071,8 @@ def show_products_page():
                     product_counts = df_products_.groupby('Product_Type')['Product_ID'].nunique().reset_index()
                     product_counts.columns = ['Product_Type', 'Count']
                     add_tooltip_css()
-                    tooltip_html = render_tooltip("Hover over the bars to see the product type and the corresponding count of unique products in that type.")
+                    tooltip_html = render_tooltip(
+                        "Hover over the bars to see the product type and the corresponding count of unique products in that type.")
                     st.markdown(f"<h1 style='display: inline-block;'>Product Count by Type {tooltip_html}</h1>",
                                 unsafe_allow_html=True)
                     st.markdown("### Visualizing the count of unique products in each type")
@@ -3344,7 +3299,7 @@ def show_products_page():
                                                                                                                   "",
                                                                                                                   regex=True)
                 unsold_products_grouped['Product_Published_At'] = \
-                unsold_products_grouped['Product_Published_At'].str.split("T").str[0]
+                    unsold_products_grouped['Product_Published_At'].str.split("T").str[0]
                 unsold_products_grouped['Product_Published_At'] = pd.to_datetime(
                     unsold_products_grouped['Product_Published_At'])
                 unsold_products_grouped_sorted = unsold_products_grouped.sort_values(by='Product_Published_At',
@@ -3451,6 +3406,7 @@ def show_products_page():
         st.markdown(
             f"<h3 style='font-size: 30px; color: red; text-align: center;'><b>Dataset Currently is unavaialbe</b></h3>",
             unsafe_allow_html=True)
+
 
 def show_revenue_page():
     st.title('Revenue Data')
@@ -3598,9 +3554,12 @@ def show_revenue_page():
                 # st.markdown("<h3 style='text-align: center;'>Revenue by Weekday/Weekend</h3>", unsafe_allow_html=True)
                 with col1:
                     add_tooltip_css()
-                    tooltip_html = render_tooltip("This pie chart compares the total revenue generated on weekdays and weekends. Hover over the chart to see the category (Weekday or Weekend), the total revenue in euros, and the percentage contribution to the overall revenue.")
-                    st.markdown(f"<h1 style='display: inline-block;'>Total Revenue Placed: Weekday vs Weekend {tooltip_html}</h1>",unsafe_allow_html=True
-                    )
+                    tooltip_html = render_tooltip(
+                        "This pie chart compares the total revenue generated on weekdays and weekends. Hover over the chart to see the category (Weekday or Weekend), the total revenue in euros, and the percentage contribution to the overall revenue.")
+                    st.markdown(
+                        f"<h1 style='display: inline-block;'>Total Revenue Placed: Weekday vs Weekend {tooltip_html}</h1>",
+                        unsafe_allow_html=True
+                        )
                     st.altair_chart(pie_chart_revenue, use_container_width=True)
             else:
                 st.title("Total Revenue Placed: Weekday vs Weekend")
@@ -3613,7 +3572,8 @@ def show_revenue_page():
             # Todo-Total revenue placed: days of week--------------------------
             if df_orders is not None and not df_orders.empty:
                 df_unique_orders = df_orders.drop_duplicates(subset='Order_ID', keep='first')
-                df_unique_orders['Order_Created_At'] = pd.to_datetime(df_unique_orders['Order_Created_At'],errors='coerce',utc=True)
+                df_unique_orders['Order_Created_At'] = pd.to_datetime(df_unique_orders['Order_Created_At'],
+                                                                      errors='coerce', utc=True)
                 df_unique_orders['days_of_week'] = df_unique_orders['Order_Created_At'].dt.dayofweek.apply(
                     lambda x: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][x]
                 )
@@ -3663,7 +3623,6 @@ def show_revenue_page():
                            <h3 style="font-size: 30px; color: white; font-weight: bold;">No Data Available for Total Revenue Placed: Days of the Week</h3>
                        </div>
                    """, unsafe_allow_html=True)
-
 
         # Todo---Total revenue placed: hours of day-------------------------------
         try:
@@ -3843,7 +3802,8 @@ def show_revenue_page():
         try:
             if df_orders is not None and not df_orders.empty:
                 df_unique_orders = df_orders.drop_duplicates(subset="Order_ID", keep="first")
-                total_revenue_by_site = df_unique_orders.groupby("Order_Referring_Site")["Order_Total_Price"].sum().reset_index()
+                total_revenue_by_site = df_unique_orders.groupby("Order_Referring_Site")[
+                    "Order_Total_Price"].sum().reset_index()
                 total_revenue_by_site.columns = ["Referring Site", "Total Revenue"]
                 if not total_revenue_by_site.empty:
                     add_tooltip_css()
@@ -3910,7 +3870,10 @@ def show_revenue_page():
             f"<h3 style='font-size: 30px; color: red; text-align: center;'><b>Datasets Currently is unavaialbe</b></h3>",
             unsafe_allow_html=True)
 
-page = st.sidebar.selectbox("Select a Page",['Customer Journey', 'Customer Data', 'Order Data', 'Abandoned Checkouts', 'Products','Revenue'])
+
+page = st.sidebar.selectbox("Select a Page",
+                            ['Customer Journey', 'Customer Data', 'Order Data', 'Abandoned Checkouts', 'Products',
+                             'Revenue'])
 
 if page == 'Customer Journey':
     show_cj_page()
