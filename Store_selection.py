@@ -54,7 +54,7 @@ def render_tooltip(info_text: str, icon: str = "ℹ️") -> str:
 
 
 st.set_page_config(
-    page_title="QeApps:Dashboard",
+    page_title="QQQeApps:Dashboard",
     page_icon="🔧",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -126,7 +126,7 @@ st.sidebar.markdown(
                background: linear-gradient(to right, white, navy);
                -webkit-background-clip: text;
                -webkit-text-fill-color: transparent;'>
-        QeApps
+        QQQe Dashboard
     </h1>
     """,
     unsafe_allow_html=True
